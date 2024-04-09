@@ -11,5 +11,5 @@ Route::get('/guide', function () {
 });
 
 Route::get('/create', function () {
-    return view('search');
+    return view('create');
 });

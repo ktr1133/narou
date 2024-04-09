@@ -55,11 +55,11 @@ try{
 
     <!--↓サイトコンテンツ-->
     <button id="js-pagetop" class="pagetop"><span class="pagetop__arrow"></span></button>
-    <?php require_once('./PHPparts/nav.php')?>
+    @include("layouts.nav")
 
     <ol>
-      <li><a href="https://freenovelanalysis.com/">Home</a></li>
-      <li>Create</li>
+        <li><a href="https://freenovelanalysis.com/">Home</a></li>
+        <li>Create</li>
     </ol>
 
     <section id="search" class="search">
@@ -70,7 +70,7 @@ try{
                 <li rel=by_writer class="tab_item">作者</li>
             </ul>
             <div id="by_title" class="panel is-active">
-                <form action="./search/result.php" method="get" class="search_content">
+                <form action="result.php" method="get" class="search_content">
                     <dl>
                         <div class="s-form-row">
                             <dt class="s-form-item"><label for="cate">指標</label><span>必須</span></dt>
@@ -215,7 +215,7 @@ try{
         </div>
     </section>
 
-    <?php require_once('./PHPparts/footer.php')?>
+    @include("layouts.footer")
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>

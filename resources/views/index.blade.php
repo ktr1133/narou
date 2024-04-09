@@ -415,11 +415,11 @@ if(!empty($_GET)){
 
     <!--↓サイトコンテンツ-->
     <button id="js-pagetop" class="pagetop"><span class="pagetop__arrow"></span></button>
-    <?php require_once('./PHPparts/nav.php')?>
+    @include('layouts.nav')
 
-    <?php require_once('./PHPparts/top.php')?>
+    @include('layouts.top')
 
-    <?php require_once('./PHPparts/about.php')?>
+    @include('layouts.about')
 
     <section id="ranking" class="ranking">
       <div class="rank-bg">
@@ -526,9 +526,9 @@ if(!empty($_GET)){
       </div>
     </section>
 
-    <?php require_once('./PHPparts/contact.php')?>
+    @include('layouts.contact')
 
-    <?php require_once('./PHPparts/footer.php')?>
+    @include('layouts.footer')
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
