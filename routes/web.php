@@ -6,9 +6,7 @@ Route::get('/', function () {
     return view('index');
 });
 
-Route::get('/guide', function () {
-    return view('guide');
-});
+Route::get('/guide', [GuideController::class, 'show']);
 
 Route::get('/create', function () {
     return view('create');
