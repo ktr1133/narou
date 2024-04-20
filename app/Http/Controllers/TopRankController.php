@@ -11,7 +11,7 @@ class topRankController extends Controller
      * Display a listing of the resource.
      */
     public function show(){
-        
+        return view('index');
     }
 
     /**
