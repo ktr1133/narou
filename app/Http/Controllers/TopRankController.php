@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Mas;
+use App\Models\Ma;
+use App\Models\Calc;
+use App\Models\Mark;
+use App\Models\Point;
+use App\Models\Unique;
+use App\Models\Update_frequency;
 use Illuminate\Http\Request;
 
 class topRankController extends Controller
@@ -20,8 +25,12 @@ class topRankController extends Controller
      */
     public function create()
     {
-        $mas = Mas::find();
-        
+        $ma = Ma::find();
+        $point = Point::find();
+        $mark = Mark::find();
+        $calc = Calc::find();
+        $unique = Unique::find();
+        $update_frequency = Update_frequency::find();
         include_once('database.php');
         try{
             // 接続
