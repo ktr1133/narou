@@ -31,15 +31,6 @@ class topRankController extends Controller
         $calc = Calc::find();
         $unique = Unique::find();
         $update_frequency = Update_frequency::find();
-        include_once('database.php');
-        try{
-            // 接続
-            $db = new PDO('mysql:host='.$host.';dbname='.$dbname.'', $username, $password);
-        } catch(PDOException $e){
-            echo "データベース接続失敗" . PHP_EOL."<br>";
-            echo $e->getMessage();
-            exit;
-        };
         // データを取得する
         //更新時点用
         $sql_date = "SELECT last_get_date FROM ma ORDER BY last_get_date DESC";
@@ -414,35 +405,5 @@ class topRankController extends Controller
         //
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(TopRankModel $topRankModel)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(TopRankModel $topRankModel)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, TopRankModel $topRankModel)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(TopRankModel $topRankModel)
-    {
-        //
-    }
 }
