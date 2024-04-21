@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ma;
-use App\Models\Calc;
-use App\Models\Mark;
-use App\Models\Point;
-use App\Models\Unique;
-use App\Models\Update_frequency;
+use App\Repositories\MaRepository;
+use App\Repositories\CalcRepository;
+use App\Repositories\MarkRepository;
+use App\Repositories\PointRepository;
+use App\Repositories\UniqueRepository;
+use App\Repositories\Update_frequencyRepository;
 use Illuminate\Http\Request;
 
 class topRankController extends Controller
@@ -25,8 +25,6 @@ class topRankController extends Controller
      */
     public function create()
     {
-        $ma = Ma::find();
-        $point = Point::find();
         $mark = Mark::find();
         $calc = Calc::find();
         $unique = Unique::find();
