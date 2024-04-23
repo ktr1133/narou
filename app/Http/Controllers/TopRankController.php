@@ -20,24 +20,54 @@ class topRankController extends Controller
         return view('index');
     }
 
-    /**
-     * create ranking based on requests.
-     */
-    public function create()
-    {
-        $mark = Mark::find();
-        $calc = Calc::find();
-        $unique = Unique::find();
-        $update_frequency = Update_frequency::find();
-        // データを取得する
-        //更新時点用
-        $sql_date = "SELECT last_get_date FROM ma ORDER BY last_get_date DESC";
-        $result_date = $db -> query($sql_date);
-        $temp_date01 = $result_date -> fetch()[0];
-        $array = preg_split("/\s/", $temp_date01);
-        $temp_date02 = $array[0];
-        $last_date = preg_replace('/-/', '/', $temp_date02);
 
+    /**
+     * get date lists.
+     */
+    public function getDateLists()
+    {
+        //日付のカラムを持つﾃｰﾌﾞﾙの１つから日付の配列を取得
+        $dateColumns = [];
+        $fillableColumns = Mark::first()->getFillable();
+        foreach ($fillableColumns as $column) {
+            if (strpos($column, '-') !== false) {
+                $dateColumns[] = $column;
+            }
+        }
+        $dateColumns = sort($dateColumns);
+        return $dateColumns;
+
+    }
+
+
+    /**
+     * last update.
+     */
+    public function getLastUpdate()
+    {
+        $dateColumns = $this -> getDateLists;
+        // 最新の日付を取得
+        $latestDate = null;
+        foreach ($dateColumns as $column) {
+            $record = Mark::orderBy($column, 'desc')->first();
+            if ($record) {
+                $dateValue = $record->{$column};
+                if ($dateValue > $latestDate) {
+                    $latestDate = $dateValue;
+                }
+            }
+        }
+    
+        return $latestDate;
+    }
+        
+
+    /**
+     * get date lists.
+     */
+    public function get_date_lists()
+    {
+        // データを取得する
         //時点取得用
         $sql_get_time = "SHOW COLUMNS FROM `mark`";
         $date_columns = $db -> query($sql_get_time);

@@ -1,16 +1,3 @@
-<?php
-include_once('database.php');
-try{
-	// 接続
-	$db = new PDO('mysql:host='.$host.';dbname='.$dbname.'', $username, $password);
-} catch(PDOException $e){
-    echo "データベース接続失敗" . PHP_EOL."<br>";
-	echo $e->getMessage();
-	exit;
-};
-
-?>
-
 <!doctype html>
 <html lang="jp">
     @include('layouts.common');
