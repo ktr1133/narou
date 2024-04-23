@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Controllers\TopRankController;
+use App\Http\Controllers\GuideController;
+use App\Http\Controllers\CreateController;
+
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [topRankController::class, 'show']);
+Route::get('/', [TopRankController::class, 'show']);
 
 Route::get('/guide', [GuideController::class, 'show']);
 
