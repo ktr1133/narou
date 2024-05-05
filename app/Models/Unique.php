@@ -7,5 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Unique extends Model
 {
+    protected $table = 'unique';
     use HasFactory;
 }

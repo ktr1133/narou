@@ -16,7 +16,7 @@
         <div class="container clear">
           <h3 class="section-title">ランキング</h3>
           <div class="rank-text">
-            Last Up Date：<time><?php echo $last_date;?></time>
+            Last Up Date：<time>{{$last_date}}</time>
           </div>
           <form action="index.php" method="get" class="rank_content">
             <dl>
