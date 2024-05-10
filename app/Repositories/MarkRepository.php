@@ -4,12 +4,11 @@ namespace App\Repositories;
 
 use App\Models\Mark;
 
-class MarkRepository extends Repository
+class MarkRepository
 {
     public function topRank(){
-        $mark = Mark::find();
-        $markRespository = $mark -> query();
-        return $markRespository;
+        $mark = Mark::get();
+        return $mark;
     }
 
 }

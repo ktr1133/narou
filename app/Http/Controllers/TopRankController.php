@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Mark;
 use App\Repositories\MaRepository;
 use App\Repositories\CalcRepository;
 use App\Repositories\MarkRepository;
@@ -9,42 +10,31 @@ use App\Repositories\PointRepository;
 use App\Repositories\UniqueRepository;
 use App\Repositories\Update_frequencyRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class topRankController extends Controller
 {
-    public $weekly;
-    public $monthly;
-    public $half;
-    public $yearly;
-    public $all;
-
-    public function __construct() {
-        $this->weeklyToWeeks = 1;
-        $this->monthlyToWeeks = 5;
-        $this->halfToWeeks = 27;
-        $this->yearlyToWeeks = 53;
-        $this->allToWeeks = 0;
-    }
-    
-    
     /**
      * Display a listing of the resource.
      */
     public function show(){
-
-        return view('index');
+        $last_date = $this -> getLastUpdate();
+    
+        return view('index', ['last_date' => $last_date]);
     }
-
-
+    
     /**
-     * get date lists.
+     * DBのmarkテーブルからカラム名が日付型のものをすべて取得
      */
     public function getDateList()
     {
-        //日付のカラムを持つﾃｰﾌﾞﾙの１つから日付の配列を取得
+        //日付のカラムを持つﾃｰﾌﾞﾙの１つから日付の配列を昇順に並べ替えて取得
         $dateColumns = [];
-        $fillableColumns = Mark::first()->getFillable();
-        foreach ($fillableColumns as $column) {
+        $mark = new Mark;
+        $markColumnNames = $mark->getColumnNames();
+        foreach ($markColumnNames as $column) {
+            var_dump($column);
+            Log::debug($column);
             if (strpos($column, '-') !== false) {
                 $dateColumns[] = $column;
             }
@@ -61,7 +51,7 @@ class topRankController extends Controller
      */
     public function getLastUpdate()
     {
-        $dateColumns = $this -> getDateLists;
+        $dateColumns = $this -> getDateList();
         // 最新の日付を取得
         $last_date = null;
         foreach ($dateColumns as $column) {
@@ -83,7 +73,7 @@ class topRankController extends Controller
     public function getPeriod($range)
     {
         // 日付配列を取得
-        $dateList = $this -> getDateList;
+        $dateList = $this -> getDateList();
         // 現在の日付を取得
         $currentDate = new DateTime();
         // 抽出する期間の開始日を設定
@@ -115,6 +105,7 @@ class topRankController extends Controller
         });
         return $filteredArray;
     }
+
 
 
     /**
