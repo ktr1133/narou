@@ -89,6 +89,6 @@ class Mark extends Model
 
     public function getColumnNames()
     {
-        return Schema::getColumns($this->getTable());
+        return Schema::getColumnListing('mark');
     }
 }

@@ -3,14 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mark;
-use App\Repositories\MaRepository;
-use App\Repositories\CalcRepository;
-use App\Repositories\MarkRepository;
-use App\Repositories\PointRepository;
-use App\Repositories\UniqueRepository;
-use App\Repositories\Update_frequencyRepository;
+use App\Models\Ma;
+use App\Models\TopRank;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class topRankController extends Controller
 {
@@ -18,11 +15,103 @@ class topRankController extends Controller
      * Display a listing of the resource.
      */
     public function show(){
+        $request = new Request;
         $last_date = $this -> getLastUpdate();
-    
-        return view('index', ['last_date' => $last_date]);
+        $select_data = $this -> getSelectData($request);
+        $result = $this -> generateRanking($request);
+
+        return view('index', ['last_date' => $last_date, 'select_date' => $select_data, 'result' => $result]);
+    }
+
+
+    /**
+     * Requestで取得した項目（期間、種類、話数帯をHP上の表示内容に置き換える）
+     */
+    public function getSelectData(Request $request)
+    {
+        $cate_mark = 'ポイントの割に読者数は多い作品';
+        $cate_calc = 'ポイントの割に読者数は多く、更新頻度が高い作品';
+        $gan_ov100un300 = '100話以上300話未満';
+        $gan_ov300un500 = '300話以上500話未満';
+        $gan_ov500 = '500話以上';
+        $timeSpan_weekly = '週間ランキング';
+        $weekly = '週間';
+        $timeSpan_monthly = '月間ランキング';
+        $monthly = '月間';
+        $timeSpan_half = '半期ランキング';
+        $half = '半期';
+        $timeSpan_yearly = '年間ランキング';
+        $yearly = '年間';
+        $timeSpan_all = '累計ランキング';
+        $all = '累計';
+
+        $title = '';
+        $r_text_time = '';
+        $r_text_cate = '';
+        $r_text_gan = '';
+
+        if(!empty($request)){
+            $timeSpan = $request -> input('r_time_span');
+            $cate = $request -> input('r_cate');
+            $gan = $request -> input('r_gan');
+            if(!empty($timeSpan)){
+                if($timeSpan === 'weekly'){
+                    $title = $timeSpan_weekly;
+                    $r_text_time = $weekly;
+                }else if($timeSpan === 'monthly'){
+                    $title = $timeSpan_monthly;
+                    $r_text_time = $monthly;
+                }else if($timeSpan === 'half'){
+                    $title = $timeSpan_half;
+                    $r_text_time = $half;
+                }else if($timeSpan === 'yearly'){
+                    $title = $timeSpan_yearly;
+                    $r_text_time = $yealy;
+                }else if($timeSpan === 'all'){
+                    $title = $timeSpan_all;
+                    $r_text_time = $all;
+                }else{
+                    $title = $timeSpan_weekly;
+                    $r_text_time = $weekly;
+                };
+            }else{
+                $title = $timeSpan_weekly;
+                $r_text_time = $weekly;
+            };
+            if(!empty($cate)){
+                if($cate === 'lowPHighU'){
+                    $r_text_cate = $cate_mark;
+                }else if($cate === 'lowPHighUHighF'){
+                    $r_text_cate = $cate_calc;
+                }else{
+                    $r_text_cate = $cate_mark;
+                };
+            }else{
+                $r_text_cate = $cate_mark;
+            };
+            if(!empty($gan)){
+                if($gan === 'from100to300'){
+                    $r_text_gan = $gan_ov100un300;
+                }else if($gan === 'from300to500'){
+                    $r_text_gan = $gan_ov300un500;
+                }else if($gan === 'from500'){
+                    $r_text_gan = $gan_ov500;
+                }else{
+                    $r_text_gan = $gan_ov500;
+                };
+            }else{
+                $r_text_gan = $gan_ov500;
+            }
+        }else{
+            $title = $timeSpan_weekly;
+            $r_text_time = $weekly;
+            $r_text_cate = $cate_mark;
+            $r_text_gan = $gan_ov500;
+        }
+        return ['title' => $title, 'r_text_time' => $r_text_time, 'r_text_cate' => $r_text_cate, 'r_text_gan' => $r_text_gan];
     }
     
+
     /**
      * DBのmarkテーブルからカラム名が日付型のものをすべて取得
      */
@@ -33,14 +122,11 @@ class topRankController extends Controller
         $mark = new Mark;
         $markColumnNames = $mark->getColumnNames();
         foreach ($markColumnNames as $column) {
-            var_dump($column);
-            Log::debug($column);
             if (strpos($column, '-') !== false) {
                 $dateColumns[] = $column;
             }
         }
-        $dateColumns = sort($dateColumns);
-        $this -> allToWeeks = count($dataColumns);
+        $this -> allToWeeks = count($dateColumns, COUNT_RECURSIVE);
         return $dateColumns;
 
     }
@@ -51,404 +137,73 @@ class topRankController extends Controller
      */
     public function getLastUpdate()
     {
-        $dateColumns = $this -> getDateList();
-        // 最新の日付を取得
-        $last_date = null;
-        foreach ($dateColumns as $column) {
-            $record = Mark::orderBy($column, 'desc')->first();
-            if ($record) {
-                $dateValue = $record->{$column};
-                if ($dateValue > $last_date) {
-                    $last_date = $dateValue;
-                }
-            }
-        }
-        
+        $ma = new Ma;
+        $last_date = $ma -> getLatestDate();        
         return $last_date;
     }
 
     /**
      * get date lists. weekly or monthly or half year or yearly or all of terms
      */
-    public function getPeriod($range)
+    public function getPeriod(Request $request)
     {
-        // 日付配列を取得
-        $dateList = $this -> getDateList();
-        // 現在の日付を取得
-        $currentDate = new DateTime();
-        // 抽出する期間の開始日を設定
-        $startDate = new DateTime();
-        switch ($range) {
-            case 'weekly':
-                $startDate->modify('-1 week');
-                break;
-            case 'monthly':
-                $startDate->modify('-1 month');
-                break;
-            case 'half':
-                $startDate->modify('-6 months');
-                break;
-            case 'yearly':
-                $startDate->modify('-1 year');
-                break;
-            case 'all':
-                break;
-            default:
-                // デフォルトは直近の1週間
-                $startDate->modify('-1 week');
-                break;        
+        if(!empty($request)){
+            $range = $request -> input('r_time_span');
+            // 日付配列を取得
+            $dateList = $this -> getDateList();
+            // 現在の日付を取得
+            $currentDate = new DateTime();
+            // 抽出する期間の開始日を設定
+            $startDate = new DateTime();
+            switch ($range) {
+                case 'weekly':
+                    $startDate->modify('-1 week');
+                    break;
+                case 'monthly':
+                    $startDate->modify('-1 month');
+                    break;
+                case 'half':
+                    $startDate->modify('-6 months');
+                    break;
+                case 'yearly':
+                    $startDate->modify('-1 year');
+                    break;
+                case 'all':
+                    break;
+                default:
+                    // デフォルトは直近の1週間
+                    $startDate->modify('-1 week');
+                    break;        
+            }
+            // 開始日以降の日付を持つ配列を生成
+            $filteredArray = array_filter($dateList, function($date) use ($startDate, $currentDate) {
+                $dateObj = new DateTime($date);
+                $dateObj >= $startDate && $dateObj <= $currentDate;
+            });
+        }else{
+            $dateList = $this -> getDateList();
+            $currentDate = new DateTime();
+            $startDate = new DateTime();
+            $startDate->modify('-1 week');
+            $filteredArray = array_filter($dateList, function($date) use ($startDate, $currentDate) {
+                $dateObj = new DateTime($date);
+                $dateObj >= $startDate && $dateObj <= $currentDate;
+            });
         }
-        // 開始日以降の日付を持つ配列を生成
-        $filteredArray = array_filter($dateList, function($date) use ($startDate, $currentDate) {
-        $dateObj = new DateTime($date);
-        return $dateObj >= $startDate && $dateObj <= $currentDate;
-        });
         return $filteredArray;
     }
 
 
 
     /**
-     * .
+     * ﾘｸｴｽﾄ内容に応じたランキングﾃﾞｰﾀを取得する。
      */
     public function generateRanking(Request $request)
     {
-        $timeSpan = $request -> input('r_time_span');
-        $cate = $request -> input('r_cate');
-        $gan = $request -> input('r_gan');
-
-        if(!empty($request)){
-        if($timeSpan === 'weekly'){
-            $r_text_time =  '週間';
-            if($cate === 'lowPHighU'){
-            $r_text_cate = 'ポイントの割に読者数は多い作品';
-            if($gan === 'from100to300'){
-                $r_text_gan = '100話以上300話未満';
-                $sql_weekly_mk_ov1un3 = "SELECT * FROM (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `mark`.`$temp_date01` as ave FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp WHERE `temp`.`ave` REGEXP '.+' AND 100<=`temp`.`general_all_no` AND 300>`temp`.`general_all_no` ORDER BY `temp`.`ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_weekly_mk_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_weekly_mk_ov3un5 = "SELECT * FROM (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `mark`.`$temp_date01` as ave FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp WHERE `temp`.`ave` REGEXP '.+' AND 300<=`temp`.`general_all_no` AND 500>`temp`.`general_all_no` ORDER BY `temp`.`ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_weekly_mk_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_weekly_mk_ov5 = "SELECT * FROM (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `mark`.`$temp_date01` as ave FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp WHERE `temp`.`ave` REGEXP '.+' AND 500<=`temp`.`general_all_no` ORDER BY `temp`.`ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_weekly_mk_ov5);
-            }
-            }else if($cate === 'lowPHighUHighF'){
-            $text_cate = 'ポイントの割に読者数は多く、更新頻度が高い作品';
-            $r_text_cate = $text_cate;
-            if($gan === 'from100to300'){
-                $text_gan = '100話以上300話未満';
-                $r_text_gan = $text_gan;
-                $sql_weekly_c_ov1un3 = "SELECT * FROM (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `calc`.`$temp_date01` as ave FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp WHERE `temp`.`$temp_date01` REGEXP '.+' AND 100<=`temp`.`general_all_no` AND 300>`temp`.`general_all_no` ORDER BY `temp`.`$temp_date01` DESC LIMIT 20;";
-                $result = $db -> query($sql_weekly_c_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_weekly_c_ov3un5 = "SELECT * FROM (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `calc`.`$temp_date01` as ave FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp WHERE `temp`.`$temp_date01` REGEXP '.+' AND 300<=`temp`.`general_all_no` AND 500>`temp`.`general_all_no` ORDER BY `temp`.`$temp_date01` DESC LIMIT 20;";
-                $result = $db -> query($sql_weekly_c_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_weekly_c_ov5 = "SELECT * FROM (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `calc`.`$temp_date01` as ave FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp WHERE `temp`.`$temp_date01` REGEXP '.+' AND 500<=`temp`.`general_all_no` ORDER BY `temp`.`$temp_date01` DESC LIMIT 20;";
-                $result = $db -> query($sql_weekly_c_ov5);
-            }else{
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_weekly_c_ov5 = "SELECT * FROM (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `calc`.`$temp_date01` as ave FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp WHERE `temp`.`$temp_date01` REGEXP '.+' AND 500<=`temp`.`general_all_no` ORDER BY `temp`.`$temp_date01` DESC LIMIT 20;";
-                $result = $db -> query($sql_weekly_c_ov5);
-            }
-            }
-        }else if($_GET['r_time_span'] === 'monthly'){
-            $title = '月間';
-            $r_text_time = $title;
-            if($cate === 'lowPHighU'){
-            $text_cate = 'ポイントの割に読者数は多い作品';
-            $r_text_cate = $text_cate;
-            if($gan === 'from100to300'){
-                $text_gan = '100話以上300話未満';
-                $r_text_gan = $text_gan;
-                $sql_monthly_mk_ov1un3 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,
-                    `mark`.`mean_monthly` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                    AND 100<=`temp`.`general_all_no` 
-                    AND 300>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                echo $sql_monthly_mk_ov1un3;
-                $result = $db -> query($sql_monthly_mk_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_monthly_mk_ov3un5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,
-                    `mark`.`mean_monthly` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                    AND 300<=`temp`.`general_all_no` 
-                    AND 500>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_monthly_mk_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_monthly_mk_ov5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,
-                    `mark`.`mean_monthly` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                    AND 500<=`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_monthly_mk_ov5);
-            }
-            }else if($cate === 'lowPHighUHighF'){
-            $text_cate = 'ポイントの割に読者数は多く、更新頻度が高い作品';
-            $r_text_cate = $text_cate;
-            if($gan === 'from100to300'){
-                $text_gan = '100話以上300話未満';
-                $r_text_gan = $text_gan;
-                $sql_monthly_c_ov1un3 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,
-                    `mark`.`mean_monthly` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                    AND 100<=`temp`.`general_all_no` 
-                    AND 300>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_monthly_c_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_monthly_c_ov3un5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,
-                    `mark`.`mean_monthly` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                    AND 300<=`temp`.`general_all_no` 
-                    AND 500>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_monthly_c_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_monthly_c_ov5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,
-                    `mark`.`mean_monthly` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                    AND 500<=`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_monthly_c_ov5);
-            }
-            }
-        }else if($_GET['r_time_span'] === 'half'){
-            $title = '半期';
-            $r_text_time = $title;
-            if($cate === 'lowPHighU'){
-            $text_cate = 'ポイントの割に読者数は多い作品';
-            $r_text_cate = $text_cate;
-            if($gan === 'from100to300'){
-                $text_gan = '100話以上300話未満';
-                $r_text_gan = $text_gan;
-                $sql_half_mk_ov1un3 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `mark`.`mean_half` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 100<=`temp`.`general_all_no` 
-                AND 300>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_half_mk_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_half_mk_ov3un5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `mark`.`mean_half` AS `ave`  
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 300<=`temp`.`general_all_no` 
-                AND 500>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_half_mk_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_half_mk_ov5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `mark`.`mean_half` AS `ave`  
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 500<=`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_half_mk_ov5);
-            }
-            }else if($cate === 'lowPHighUHighF'){
-            $text_cate = 'ポイントの割に読者数は多く、更新頻度が高い作品';
-            $r_text_cate = $text_cate;
-            if($gan === 'from100to300'){
-                $text_gan = '100話以上300話未満';
-                $r_text_gan = $text_gan;
-                $sql_half_c_ov1un3 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `calc`.`mean_half` AS `ave`  
-                FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 100<=`temp`.`general_all_no` 
-                AND 300>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_half_c_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_half_c_ov3un5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `calc`.`mean_half` AS `ave`  
-                FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 300<=`temp`.`general_all_no` 
-                AND 500>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_half_c_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_half_c_ov5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `calc`.`mean_half` AS `ave`  
-                FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 500<=`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_half_c_ov5);
-            }
-            }
-        }else if($_GET['r_time_span'] === 'yearly'){
-            $title = '年間';
-            $r_text_time = $title;
-            if($cate === 'lowPHighU'){
-            $text_cate = 'ポイントの割に読者数は多い作品';
-            $r_text_cate = $text_cate;
-            if($gan === 'from100to300'){
-                $text_gan = '100話以上300話未満';
-                $r_text_gan = $text_gan;
-                $sql_yearly_mk_ov1un3 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `mark`.`mean_yearly` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 100<=`temp`.`general_all_no` 
-                AND 300>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_yearly_mk_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_yearly_mk_ov3un5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `mark`.`mean_yearly` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 300<=`temp`.`general_all_no` 
-                AND 500>`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_yearly_mk_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_yearly_mk_ov5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,`mark`.`mean_yearly` AS `ave` 
-                FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 500<=`temp`.`general_all_no` 
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_yearly_mk_ov5);
-            }
-            }else if($cate === 'lowPHighUHighF'){
-            $text_cate = 'ポイントの割に読者数は多く、更新頻度が高い作品';
-            $r_text_cate = $text_cate;
-            if($gan === 'from100to300'){
-                $text_gan = '100話以上300話未満';
-                $r_text_gan = $text_gan;
-                $sql_yearly_c_ov1un3 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,`calc`.`mean_yearly` AS `ave` 
-                FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 100<=`temp`.`general_all_no`
-                AND 300>`temp`.`general_all_no`
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_yearly_c_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_yearly_c_ov3un5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,`calc`.`mean_yearly` AS `ave` 
-                FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 300<=`temp`.`general_all_no`
-                AND 500>`temp`.`general_all_no`
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_yearly_c_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_yearly_c_ov5 = "SELECT * FROM 
-                (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`,`calc`.`mean_yearly` AS `ave` 
-                FROM `ma`, `calc` WHERE `ma`.`ncode`=`calc`.`ncode`) AS temp 
-                WHERE `ave` REGEXP '.+' 
-                AND 500<=`temp`.`general_all_no`
-                ORDER BY `ave` ASC LIMIT 20;";
-                $result = $db -> query($sql_yearly_c_ov5);
-            }
-            }
-        }else if($_GET['r_time_span'] === 'all'){
-            $title = '累計';
-            $r_text_time = $title;
-            if($cate === 'lowPHighU'){
-            $text_cate = 'ポイントの割に読者数は多い作品';
-            $r_text_cate = $text_cate;
-            if($gan === 'from100to300'){
-                $text_gan = '100話以上300話未満';
-                $r_text_gan = $text_gan;
-                $sql_all_mk_ov1un3 = "SELECT ncode, title, writer, general_all_no, mean_mk as ave from ma WHERE 100<=general_all_no AND 300>general_all_no ORDER BY ave ASC LIMIT 20";
-                $result = $db -> query($sql_all_mk_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_all_mk_ov3un5 = "SELECT ncode, title, writer, general_all_no, mean_mk as ave from ma WHERE 300<=general_all_no AND 500>general_all_no ORDER BY ave ASC LIMIT 20";
-                $result = $db -> query($sql_all_mk_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_all_mk_ov5 = "SELECT ncode, title, writer, general_all_no, mean_mk as ave from ma WHERE 500<=general_all_no ORDER BY ave ASC LIMIT 20";
-                $result = $db -> query($sql_all_mk_ov5);
-            }
-            }else if($cate === 'lowPHighUHighF'){
-            $text_cate = 'ポイントの割に読者数は多く、更新頻度が高い作品';
-            $r_text_cate = $text_cate;
-            if($gan === 'from100to300'){
-                $text_gan = '100話以上300話未満';
-                $r_text_gan = $text_gan;
-                $sql_all_c_ov1un3 = "SELECT ncode, title, writer, general_all_no, mean_c as ave from ma WHERE 100<=general_all_no AND 300>general_all_no ORDER BY ave DESC LIMIT 20";
-                $result = $db -> query($sql_all_c_ov1un3);
-            }else if($gan === 'from300to500'){
-                $text_gan = '300話以上500話未満';
-                $r_text_gan = $text_gan;
-                $sql_all_c_ov3un5 = "SELECT ncode, title, writer, general_all_no, mean_c as ave from ma WHERE 300<=general_all_no AND 500>general_all_no ORDER BY ave DESC LIMIT 20";
-                $result = $db -> query($sql_all_c_ov3un5);
-            }else if($gan === 'from500'){
-                $text_gan = '500話以上';
-                $r_text_gan = $text_gan;
-                $sql_all_c_ov5 = "SELECT ncode, title, writer, general_all_no, mean_c as ave from ma WHERE 500<=general_all_no ORDER BY ave DESC LIMIT 20";
-                $result = $db -> query($sql_all_c_ov5);
-            }
-            }
-        };
-        }else{
-            $title = '週間';
-            $r_text_time = $title;
-            $r_text_cate = 'ポイントの割に読者数は多い作品';
-            $r_text_gan = '500話以上';
-            $sql_weekly_mk_ov5 = "SELECT * FROM (SELECT `ma`.`ncode`, `ma`.`title`, `ma`.`writer`, `ma`.`general_all_no`, `mark`.`$temp_date01` as ave FROM `ma`, `mark` WHERE `ma`.`ncode`=`mark`.`ncode`) AS temp WHERE `temp`.`ave` REGEXP '.+' AND 500<=`temp`.`general_all_no` ORDER BY `temp`.`ave` ASC LIMIT 20;";
-            $result = $db -> query($sql_weekly_mk_ov5);
-        }
-        return [$title, $r_text_cate, $r_text_gan, $result];
+        $ma = new Ma;
+        $result = $ma -> generateRanking($request);
+        
+        return $result;
     }
 
     /**

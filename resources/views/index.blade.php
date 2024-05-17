@@ -61,11 +61,11 @@
 
           <div class="rank-frame">
             <div class="subtitle-frame">
-              <div class="section-subtitle"><?php echo $title.'ランキング'; ?></div>
+              <div class="section-subtitle">{{$select_date['title']}}</div>
               <div class="r-frame-items">
-                <div class="r-f-item"><div class="r-f-item-name">期間</div><div class="r-f-item-text"><?php echo $r_text_time?></div></div>
-                <div class="r-f-item"><div class="r-f-item-name">種類</div><div class="r-f-item-text"><?php echo $r_text_cate?></div></div>
-                <div class="r-f-item"><div class="r-f-item-name">総話数帯</div><div class="r-f-item-text"><?php echo $r_text_gan?></div></div>
+                <div class="r-f-item"><div class="r-f-item-name">期間</div><div class="r-f-item-text">{{$select_date['r_text_time']}}</div></div>
+                <div class="r-f-item"><div class="r-f-item-name">種類</div><div class="r-f-item-text"><{{$select_date['r_text_cate']}}</div></div>
+                <div class="r-f-item"><div class="r-f-item-name">総話数帯</div><div class="r-f-item-text">{{$select_date['r_text_gan']}}</div></div>
               </div>
             </div>
             <div class="rank-content">
@@ -74,30 +74,29 @@
                   <th>順位</th>
                   <th class="title-writer"><span class="r-title">作品名</span><span class="r-writer"> / 作者 / </span><span class="r-ncode">ncode</span></th>
                 </tr>
-                <?php $i=1?>
-                <?php $before_ave = null;?>
-                <?php while($record = $result -> fetch()):?>
-                  <?php if($i % 2 ===1):?>
-                    <tr <?php echo "style='background-color:#f9f9f9'"?>>
-                  <?php else:?>
+                @php $i=1;@endphp
+                @php $before_ave = null;@endphp
+                @foreach($result as $record):
+                  @if($i % 2 ===1):
+                    <tr style='background-color:#f9f9f9'>
+                  @else:
                     <tr>
-                  <?php endif;?>
-                    <?php
-                      if($record['ave']===$before_ave){
-                        $rank = $i-1;
-                      }else{
-                        $rank = $i;
-                      };
-                    ?>
-                      <th><span class='r-rank'><?php echo $rank;?></span>位</th>
+                  @endif
+                  @if($record['ave']===$before_ave){
+                      @php $rank = $i-1;@endphp
+                    }
+                  @else:
+                      @php $rank = $i;@endphp
+                  @endif
+                      <th><span class='r-rank'>@php echo $rank;@endphp</span>位</th>
                       <td class="title-writer">
-                        <span class="r-title"><?php echo $record['title']; ?></span>
-                        <span class="r-writer"> / <?php echo $record['writer']; ?> / </span>
-                        <span class="r-ncode"><?php echo $record['ncode']; ?></span>
+                        <span class="r-title">@php echo $record['title']; @endphp</span>
+                        <span class="r-writer"> / @php echo $record['writer']; @endphp / </span>
+                        <span class="r-ncode">@php echo $record['ncode']; @endphp</span>
                       </td>
-                      <?php $before_ave = $record['ave']?>
-                      <?php $i++?>
-                <?php endwhile;?>
+                      @php $before_ave = $record['ave']@endphp
+                      @php $i++ @endphp
+                @endforeach
               </table>
               <div class="to-detail">
                 <div class="to-detail-title">作品の詳細を知りたい場合</div>
