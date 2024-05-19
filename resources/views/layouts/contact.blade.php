@@ -5,14 +5,14 @@
         <div class="d-flex justify-content-center">
             <div class="h-100 p-3 text-center">
                 <a href="" class="contact_img">
-                    <img src="./img/mail.svg" class="card-img-top p-5 w-50 h-50" alt="PAA">
+                    <img src="{{asset('img/mail.svg')}}" class="card-img-top p-5 w-50 h-50" alt="PAA">
                 </a>
                 <h4 class="card-title fw-bold">e-mail</h4>
                 <a class="contact_name text-center fs-6" href target="_blank">politicalactivityanalysis@gmail.com</a>
             </div>
             <div class="h-100 p-3 text-center">
                 <a href="" class="contact_img">
-                    <img src="./img/twitter.svg" class="card-img-top p-5 w-50 h-50" alt="seisakurei2">
+                    <img src="{{asset('img/twitter.svg')}}" class="card-img-top p-5 w-50 h-50" alt="seisakurei2">
                 </a>
                 <h4 class="card-title fw-bold text-center">twitter</h4>
                 <a class="contact_name" href target="_blank">@example</a>

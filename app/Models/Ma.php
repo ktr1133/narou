@@ -33,6 +33,10 @@ class Ma extends Model
         'sum_po',
         'sum_un'
     ];
+    public $mean_monthly = 'mean_monthly';
+    public $mean_half = 'mean_half';
+    public $mean_yearly = 'mean_yearly';
+    public $mean_all = 'mean';
 
     //リレーションの定義
     public function points(){
@@ -223,31 +227,37 @@ class Ma extends Model
     private function getRankingResult($timeSpan, $from, $to, $table)
     {
         $latestDateColumnName = $this->getLatestDate();
-    
+        $ave = $latestDateColumnName;
         switch ($timeSpan) {
             case 'weekly':
                 $column = ($table === 'mark') ? $latestDateColumnName : $latestDateColumnName;
+                $ave = $latestDateColumnName;
                 break;
             case 'monthly':
-                $column = ($table === 'mark') ? 'mean_monthly' : 'mean_monthly';
+                $column = ($table === 'mark') ? $this -> mean_monthly : $this -> mean_monthly;
+                $ave = $this -> mean_monthly;
                 break;
             case 'half':
-                $column = ($table === 'mark') ? 'mean_half' : 'mean_half';
+                $column = ($table === 'mark') ? $this -> mean_half : $this -> mean_half;
+                $ave = $this -> mean_half;
                 break;
             case 'yearly':
-                $column = ($table === 'mark') ? 'mean_yearly' : 'mean_yearly';
+                $column = ($table === 'mark') ? $this -> mean_yearly : $this -> mean_yearly;
+                $ave = $this -> mean_yearly;
                 break;
             case 'all':
-                $column = ($table === 'mark') ? 'mean' : 'mean';
+                $column = ($table === 'mark') ? $this -> mean_all : $this -> mean_all;
+                $ave = $this -> mean_all;
                 break;
             default:
                 $column = $latestDateColumnName;
+                $ave = $latestDateColumnName;
                 break;
         }
     
         return $this->query()
             ->leftJoin($table, 'ma.ncode', '=', "$table.ncode")
-            ->select('ma.*', "$table.*")
+            ->select('ma.*', "$table.$ave as ave")
             ->whereBetween('general_all_no', [$from, $to])
             ->where($column, '>', 0)
             ->orderBy($column)

@@ -933,6 +933,11 @@ nav {
   text-align: left;
   line-height: 20px;
 }
+
+.odd-row {
+  background: #f9f9f9;
+}
+
 .rank-content .r-rank {
   font-size: 24px;
 }
