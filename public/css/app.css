@@ -992,11 +992,13 @@ nav {
   right: 20px;
   bottom: 20px;
   width: 20%;
+  height: 150px;
   padding: 20px;
   background: rgba(255, 255, 255, 0.7);
   border-radius: 5px;
   -webkit-box-shadow: 0 3px 6px 0 #082B48;
           box-shadow: 0 3px 6px 0 #082B48;
+  cursor: move;
 }
 @media (max-width: 850px) {
   .to-detail {

@@ -261,7 +261,7 @@ class Ma extends Model
             ->whereBetween('general_all_no', [$from, $to])
             ->where($column, '>', 0)
             ->orderBy($column)
-            ->limit(20)
+            ->limit(50)
             ->get();
     }
     

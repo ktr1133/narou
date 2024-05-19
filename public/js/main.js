@@ -64,6 +64,32 @@ $('.js-detail-btn').on('click' ,function(){
     window.location.href = "detail.php?"+ncode
 })
 
+/*-- 詳細検索ブロックを動かせるようにする-- */
+$(document).ready(function() {
+    var $dragging = null;
+
+    $(document.body).on("mousemove", function(e) {
+        if ($dragging) {
+            $dragging.offset({
+                top: e.pageY - $dragging.data("y"),
+                left: e.pageX - $dragging.data("x")
+            });
+        }
+    });
+
+    $(".to-detail").on("mousedown", function(e) {
+        var $this = $(this);
+        $dragging = $this;
+        $this.data("x", e.pageX - $this.offset().left);
+        $this.data("y", e.pageY - $this.offset().top);
+    });
+
+    $(document.body).on("mouseup", function(e) {
+        $dragging = null;
+    });
+});
+
+
 /*-- もっと見る、閉じるボタン-- */
 $(function(){
     //trの数を取得
