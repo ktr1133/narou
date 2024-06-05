@@ -17,6 +17,7 @@
                     <h3 class="section-title">ランキング</h3>
                     <div class="rank-text">Last Up Date：<time>{{$last_date}}</time></div>
                     <form action="{{route('topRank.show')}}" method="get" class="rank_content">
+                        @csrf
                         <dl>
                             <div class="r-form-row">
                                 <dt class="r-form-item"><label for="r-time-span">期間</label></dt>
@@ -68,39 +69,40 @@
                         </div>
                         <div class="rank-content">
                             <table>
-                              <tr>
-                                  <th>順位</th>
-                                  <th class="title-writer">
-                                      <span class="r-title">作品名</span>
-                                      <span class="r-writer"> / 作者 / </span>
-                                      <span class="r-ncode">ncode</span>
-                                  </th>
-                              </tr>
-                              @php
-                                  $i = 1;
-                                  $j = 1;
-                                  $beforeAve = null;
-                              @endphp
-                              @foreach ($result as $record)
-                                  <tr @class(['even-row' => $j %2 === 0, 'odd-row' => $j %2 !== 0,])>
-                                      @php
-                                          $rank = $record['ave'] === $beforeAve ? ($i === 1 ? $i : $i - 1) : $i;
-                                          $beforeAve = $record['ave'];
-                                          $i++;
-                                          $j++;
-                                      @endphp
-                                      <th><span class="r-rank">{{ $rank }}</span>位</th>
-                                      <td class="title-writer">
-                                          <span class="r-title">{{ $record['title'] }}</span>
-                                          <span class="r-writer"> / {{ $record['writer'] }} / </span>
-                                          <span class="r-ncode">{{ $record['ncode'] }}</span>
-                                      </td>
-                                  </tr>
-                              @endforeach
+                                <tr>
+                                    <th>順位</th>
+                                    <th class="title-writer">
+                                        <span class="r-title">作品名</span>
+                                        <span class="r-writer"> / 作者 / </span>
+                                        <span class="r-ncode">ncode</span>
+                                    </th>
+                                </tr>
+                                @php
+                                    $i = 1;
+                                    $j = 1;
+                                    $beforeAve = null;
+                                @endphp
+                                @foreach ($result as $record)
+                                    <tr @class(['even-row' => $j %2 === 0, 'odd-row' => $j %2 !== 0,])>
+                                        @php
+                                            $rank = $record['ave'] === $beforeAve ? ($i === 1 ? $i : $i - 1) : $i;
+                                            $beforeAve = $record['ave'];
+                                            $i++;
+                                            $j++;
+                                        @endphp
+                                        <th><span class="r-rank">{{ $rank }}</span>位</th>
+                                        <td class="title-writer">
+                                            <span class="r-title">{{ $record['title'] }}</span>
+                                            <span class="r-writer"> / {{ $record['writer'] }} / </span>
+                                            <span class="r-ncode">{{ $record['ncode'] }}</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             </table>
                             <div class="to-detail">
                                 <div class="to-detail-title">詳細検索</div>
                                 <form action="{{route('detail.show')}}" method="POST" class="to-detail-form">
+                                    @csrf
                                     <div class="to-detail-input-wrapper">
                                         <input type="text" name="ncode" placeholder="ncode" class="to-detail-input">
                                     </div>

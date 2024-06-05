@@ -60,7 +60,6 @@ $(function () {
 $('.js-detail-btn').on('click' ,function(){
     var text = 'ncode='
     var ncode =  text.concat($(this).getAttribute('id'))
-    console.log(ncode)
     window.location.href = "detail.php?"+ncode
 })
 
