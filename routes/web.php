@@ -21,4 +21,6 @@ Route::post('/create/result', [ResultController::class, 'show'])
     ->name('result.show')
     ->middleware(CreatePostRequest::class);
 
-Route::get('/create/detail', [DetailController::class, 'show'])->name('detail.show')->middleware(DetailPostRequest::class);
+Route::get('/create/detail', [DetailController::class, 'show'])
+    ->name('detail.show')
+    ->middleware(DetailPostRequest::class);
