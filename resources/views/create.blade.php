@@ -8,7 +8,7 @@
         @include("layouts.nav")
 
         <ol>
-            <li><a href="{{route('topRank.show')}}">Home</a></li>
+            <li><a href="{{route('top-rank.show')}}">Home</a></li>
             <li>Create</li>
         </ol>
 
@@ -50,7 +50,7 @@
                 </div>
                 @endif
                 <div id="by_title" class="panel is-active">
-                    <form action="{{ route('result.show') }}" method="post" class="search_content">
+                    <form action="{{ route('result.show') }}" method="get" class="search_content">
                         @csrf
                         <dl>
                             <div class="s-form-row">

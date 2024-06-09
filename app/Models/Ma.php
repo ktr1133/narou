@@ -11,10 +11,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Consts\NarouConst;
+use App\Http\Requests\CreatePostRequest;
+use App\Http\Requests\DetailPostRequest;
 use App\Models\Point;
 use App\Models\Unique;
 use App\Models\Mark;
-use App\Models\Update_frequency;
+use App\Models\UpdateFrequency;
 use App\Models\Calc;
 
 
@@ -43,7 +45,7 @@ class Ma extends Model
     private $sum_half = 'sum_half';
     private $sum_yearly = 'sum_yearly';
     private $sum_all = 'sum_all';
-    private $tableNames = [
+    private $table_names = [
         NarouConst::MARK              => NarouConst::TBL_MARK,
         NarouConst::CALC              => NarouConst::TBL_CALC,
         NarouConst::POINT             => NarouConst::TBL_POINT,
@@ -62,14 +64,17 @@ class Ma extends Model
         return $this ->hasOne(Mark::class);
     }
     public function updateFrequencies(){
-        return $this ->hasOne(Update_frequency::class);
+        return $this ->hasOne(UpdateFrequency::class);
     }
     public function calcs(){
         return $this ->hasOne(Calc::class);
     }
 
 
-    // トップページ用。ｶﾃｺﾞﾘ別に結合
+    // トップページ用
+    /**
+     * ｶﾃｺﾞﾘ別に結合
+     */
     public function joinedByCategory(Builder $query, $cate)
     {
         // maテーブルとmark or calc($cate)テーブルを左側結合
@@ -81,7 +86,9 @@ class Ma extends Model
 
     }
 
-    //日付のカラム名をすべて取得
+    /**
+     * 日付のカラム名をすべて取得
+     */
     public function getDateColumns()
     {
         // markテーブルのカラム名を取得
@@ -97,7 +104,9 @@ class Ma extends Model
         return $dateColumns;
     }
 
-    // 最新の日付のカラム名を取得
+    /**
+     * 最新の日付取得
+     */
     public function getLatestDate()
     {
         $dateColumns = $this -> getDateColumns();
@@ -105,10 +114,12 @@ class Ma extends Model
         return max($dateColumns);
     }
 
-    //トップページのランキングデータ作成
+    /**
+     * ランキングデータ作成
+     */
     public function generateTopRanking(Request $request)
     {
-        $timeSpan = $request->input(NarouConst::SELECT_TOP_TIMESPAN, NarouConst::TIME_SPAN_WEEKLY);
+        $time_span = $request->input(NarouConst::SELECT_TOP_TIMESPAN, NarouConst::TIME_SPAN_WEEKLY);
         $cate = $request->input(NarouConst::SELECT_TOP_CATEGORY, NarouConst::MARK);
         $gan = $request->input(NarouConst::SELECT_TOP_GENERAL_ALL_NO, NarouConst::GAN_OVER100_UNDER300);
     
@@ -116,41 +127,50 @@ class Ma extends Model
         $to = $this->getToValue($gan);
     
         if ($cate === NarouConst::MARK){
-            $result = $this->getTopRankingResult($timeSpan, $from, $to, NarouConst::TBL_MARK);
+            $result = $this->getTopRankingResult($time_span, $from, $to, NarouConst::TBL_MARK);
         } elseif ($cate === NarouConst::CALC) {
-            $result = $this->getTopRankingResult($timeSpan, $from, $to, NarouConst::TBL_CALC);
+            $result = $this->getTopRankingResult($time_span, $from, $to, NarouConst::TBL_CALC);
         } else {
-            $result = $this->getTopRankingResult($timeSpan, $from, $to, NarouConst::TBL_MARK);
+            $result = $this->getTopRankingResult($time_span, $from, $to, NarouConst::TBL_MARK);
         }
     
         return $result;
     }
     
+    /**
+     * 総話数帯のfrom値取得
+     */
     public function getFromValue($gan)
     {
         switch ($gan) {
             case NarouConst::GAN_OVER100_UNDER300:
                 return 100;
-            case NarouConst::GAN_OVER100_UNDER300:
+            case NarouConst::GAN_OVER300_UNDER500:
                 return 300;
-            case NarouConst::GAN_OVER100_UNDER300:
+            case NarouConst::GAN_OVER500:
                 return 500;
             default:
                 return 500;
         }
     }
     
+    /**
+     * 総話数帯to値取得
+     */
     public function getToValue($gan)
     {
-        return ($gan === NarouConst::GAN_OVER100_UNDER300) ? PHP_INT_MAX : PHP_INT_MAX;
+        return ($gan === NarouConst::GAN_OVER500) ? PHP_INT_MAX : PHP_INT_MAX;
     }
     
-    public function getTopRankingResult($timeSpan, $from, $to, $table)
+    /**
+     * ランキングデータ作成
+     */
+    public function getTopRankingResult($time_span, $from, $to, $table)
     {
         $limit=50;
         $latestDateColumnName = $this->getLatestDate();
         $ave = $latestDateColumnName;
-        switch ($timeSpan) {
+        switch ($time_span) {
             case NarouConst::TIME_SPAN_WEEKLY:
                 $column = $latestDateColumnName;
                 $ave = $latestDateColumnName;
@@ -188,7 +208,7 @@ class Ma extends Model
             ->select('ma.*', "$table.$ave as ave")
             ->whereBetween('general_all_no', [$from, $to])
             ->where($column, '>', 0)
-            ->orderBy($column)
+            ->orderBy($column, 'asc')
             ->limit($limit)
             ->get();
         }elseif($table === NarouConst::TBL_CALC){
@@ -212,39 +232,12 @@ class Ma extends Model
         }
         return $result;
     }
-    //ｸﾘｴｲﾄﾍﾟｰｼﾞのランキング作成
-    public function generateRanking(Request $request)
-    {
-        $timeSpan = $request->input(NarouConst::SELECT_CREATE_TIMESPAN, NarouConst::TIME_SPAN_WEEKLY);
-        $cate = $request->input(NarouConst::SELECT_CREATE_CATEGORY, NarouConst::MARK);
-        $gan = $request->input(NarouConst::INPUT_GENERAL_ALL_NO);
-        $gan_from = $gan[NarouConst::INPUT_GENERAL_ALL_NO_FROM];
-        $gan_to = $gan[NarouConst::INPUT_GENERAL_ALL_NO_TO];
-        $point = $request->input(NarouConst::INPUT_POINT);
-        $point_from = $point[NarouConst::INPUT_POINT_FROM];
-        $point_to = $point[NarouConst::INPUT_POINT_TO];
-        $unique = $request->input(NarouConst::INPUT_UNIQUE);
-        $unique_from = $unique[NarouConst::INPUT_UNIQUE_FROM];
-        $unique_to = $unique[NarouConst::INPUT_UNIQUE_TO];
-        $frequency = $request->input(NarouConst::TBL_UF);
-    
-        $num = 50;
-        
-        $result = new EloquentCollection();
-        if ($cate === NarouConst::MARK){
-            //$result = $this->getRankingResult_ASC($timeSpan, $from, $to, NarouConst::TBL_MARK);
-        } elseif ($cate === NarouConst::CALC) {
-            //$result = $this->getRankingResult_DSC($timeSpan, $from, $to, NarouConst::TBL_CALC);
-        } elseif ($cate === NarouConst::POINT){
-            //$result = $this->getRankingResult_DSC($timeSpan, $from, $to, NarouConst::TBL_POINT);
-        } elseif ($cate === NarouConst::UNIQUE){
-            //$result = $this->getRankingResult_DSC($timeSpan, $from, $to, NarouConst::TBL_POINT);
-        }
-        return $result;
-    }
 
-    //ｸﾘｴｲﾄﾍﾟｰｼﾞのﾗﾝｷﾝｸﾞ作成
-    public function getRankingResult(Request $request)
+    //ｸﾘｴｲﾄﾍﾟｰｼﾞ
+    /**
+     * ランキングデータ作成
+     */
+    public function getRankingResult(CreatePostRequest $request)
     {
         //ﾘｸｴｽﾄﾃﾞｰﾀの整理
         $cate = $request -> input(NarouConst::SELECT_CREATE_CATEGORY);
@@ -424,14 +417,19 @@ class Ma extends Model
         };
 
         //並べ替えの対象となるカラムの特定
+        $ascending_flg = false;
         if ($cate===NarouConst::MARK) {
             $main_column = 'mark.'.$column;
+            $ascending_flg = true;
         } else if ($cate===NarouConst::CALC) {
             $main_column = 'calc.'.$column;
+            $ascending_flg = false;
         } else if ($cate===NarouConst::POINT) {
             $main_column = 'point.'.$column;
+            $ascending_flg = false;
         } else if ($cate===NarouConst::UNIQUE) {
             $main_column = 'unique.'.$column;
+            $ascending_flg = false;
         }
 
         //抽出する列のリストを作成
@@ -443,9 +441,162 @@ class Ma extends Model
             $selected_columns[] = $ele['column'];
         }
 
-        return $query->select($selected_columns)
-            ->orderBy($column)
-            ->limit(50)
-            ->get();
+        if ($ascending_flg) {
+            $result = $query->select($selected_columns)
+                ->where($main_column, '>', 0)
+                ->orderBy($main_column, 'asc')
+                ->limit(50)
+                ->get();
+        } else {
+            $result = $query->select($selected_columns)
+                ->where($main_column, '>', 0)
+                ->orderBy($main_column, 'desc')
+                ->limit(50)
+                ->get();
+        }
+
+        return $result;
+    }
+
+    //ここからDetailﾍﾟｰｼﾞ用
+    /**
+     * 対象作品のﾃﾞｰﾀを全テーブルから取得
+     * 
+     * @param  DetailPostRequest $request
+     * @return Model
+     */
+    public function getDetailWork(DetailPostRequest $request): Model
+    {
+        Log::info('getDetailWorkﾒｿｯﾄﾞ引数$request');
+        Log::debug($request);
+        return $this->query()
+            ->where('ma.ncode','=', $request['ncode'])
+            ->select('*')
+            ->first();
+    }
+
+     /**
+     * 対象作品のﾃﾞｰﾀをpointテーブルから取得
+     * 
+     * @param  Request $request
+     * @return Model
+     */
+    public function getPoint(Request $request): Model
+    {
+        return $this->query()
+            ->leftJoin(
+                NarouConst::TBL_POINT,
+                NarouConst::TBL_MA.'.ncode',
+                '=',
+                NarouConst::TBL_POINT.'.ncode'
+                )
+            ->select(
+                'point.sum_all as sum_all_po',
+                'point.sum_yearly as sum_yearly_po',
+                'point.sum_half as sum_half_po',
+                'point.sum_monthly as sum_monthly_po',
+                )
+            ->where('ma.ncode','=',$request['ncode'])
+            ->first();
+    }
+
+     /**
+     * 対象作品のﾃﾞｰﾀをuniqueテーブルから取得
+     * 
+     * @param  Request $request
+     * @return Model
+     */
+    public function getUnique(Request $request): Model
+    {
+        return $this->query()
+            ->leftJoin(
+                NarouConst::TBL_UNIQUE,
+                NarouConst::TBL_MA.'.ncode',
+                '=',
+                NarouConst::TBL_UNIQUE.'.ncode'
+                )
+            ->select(
+                'unique.sum_all as sum_all_un',
+                'unique.sum_yearly as sum_yearly_un',
+                'unique.sum_half as sum_half_un',
+                'unique.sum_monthly as sum_monthly_un',
+                )
+            ->where('ma.ncode','=',$request['ncode'])
+            ->first();
+    }
+
+     /**
+     * 対象作品のﾃﾞｰﾀをmarkテーブルから取得
+     * 
+     * @param  Request $request
+     * @return Model
+     */
+    public function getMark(Request $request): Model
+    {
+        return $this->query()
+            ->leftJoin(
+                NarouConst::TBL_MARK,
+                NarouConst::TBL_MA.'.ncode',
+                '=',
+                NarouConst::TBL_MARK.'.ncode'
+                )
+            ->select(
+                'mark.mean as mean_mk',
+                'mark.mean_yearly as mean_yearly_mk',
+                'mark.mean_half as mean_half_mk',
+                'mark.mean_monthly as mean_monthly_mk',
+                )
+            ->where('ma.ncode','=',$request['ncode'])
+            ->first();
+    }
+
+     /**
+     * 対象作品のﾃﾞｰﾀをupdate_frequencyテーブルから取得
+     * 
+     * @param  Request $request
+     * @return Model
+     */
+    public function getUF(Request $request): Model
+    {
+        return $this->query()
+            ->leftJoin(
+                NarouConst::TBL_UF,
+                NarouConst::TBL_MA.'.ncode',
+                '=',
+                NarouConst::TBL_UF.'.ncode'
+                )
+            ->select(
+                'update_frequency.mean as mean_uf',
+                'update_frequency.mean_yearly as mean_yearly_uf',
+                'update_frequency.mean_half as mean_half_uf',
+                'update_frequency.mean_monthly as mean_monthly_uf',
+                )
+            ->where('ma.ncode','=',$request['ncode'])
+            ->first();
+    }
+
+     /**
+     * 対象作品のﾃﾞｰﾀをcalcテーブルから取得
+     * 
+     * @param  Request $request
+     * @return Model
+     */
+    public function getCalc(Request $request): Model
+    {
+        return $this->query()
+            ->leftJoin(
+                NarouConst::TBL_CALC,
+                NarouConst::TBL_MA.'.ncode',
+                '=',
+                NarouConst::TBL_CALC.'.ncode'
+                )
+            ->select(
+                'calc.mean as mean_c',
+                'calc.mean_yearly as mean_yearly_c',
+                'calc.mean_half as mean_half_c',
+                'calc.mean_monthly as mean_monthly_c',
+                )
+            ->where('ma.ncode','=',$request['ncode'])
+            ->first();
     }
 }

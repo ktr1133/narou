@@ -6,24 +6,23 @@ use App\Consts\NarouConst;
 use App\Models\Mark;
 use App\Models\Ma;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class TopRankController extends Controller
 {
-    public $weeklyToWeeks;
-    public $montylyToWeeks;
-    public $halfToWeeks;
-    public $yearlyToWeeks;
-    public $allToWeeks;
+    public $weekly_to_weeks;
+    public $montyly_to_weeks;
+    public $half_to_weeks;
+    public $yearly_to_weeks;
+    public $all_to_weeks;
     
-    public function ____construct($weeklyToWeeks, $montylyToWeeks, $halfToWeeks, $yearlyToWeeks, $allToWeeks)
+    public function ____construct($weekly_to_weeks, $montyly_to_weeks, $half_to_weeks, $yearly_to_weeks, $all_to_weeks)
     {
-        $this->weeklyToWeeks=1;
-        $this->montylyToWeeks=5;
-        $this->halfToWeeks=26;
-        $this->yearlyToWeeks=52;
-        $this->allToWeeks = 0;
+        $this->weekly_to_weeks=1;
+        $this->montyly_to_weeks=5;
+        $this->half_to_weeks=26;
+        $this->yearly_to_weeks=52;
+        $this->all_to_weeks = 0;
     }
     /**
      * Display a listing of the resource.
@@ -47,15 +46,15 @@ class TopRankController extends Controller
         $gan_ov100un300 = NarouConst::GAN_OVER_100_UNDER_300_TEXT;
         $gan_ov300un500 = NarouConst::GAN_OVER_300_UNDER_500_TEXT;
         $gan_ov500 = NarouConst::GAN_OVER_500_TEXT;
-        $timeSpan_weekly = NarouConst::TOPPAGE_TITLE_WEEKLY;
+        $time_span_weekly = NarouConst::TOPPAGE_TITLE_WEEKLY;
         $weekly = NarouConst::WEEKLY_TEXT;
-        $timeSpan_monthly = NarouConst::TOPPAGE_TITLE_MONTHLY;
+        $time_span_monthly = NarouConst::TOPPAGE_TITLE_MONTHLY;
         $monthly = NarouConst::MONTHLY_TEXT;
-        $timeSpan_half = NarouConst::TOPPAGE_TITLE_HALF;
+        $time_span_half = NarouConst::TOPPAGE_TITLE_HALF;
         $half = NarouConst::HALF_TEXT;
-        $timeSpan_yearly = NarouConst::TOPPAGE_TITLE_YEARLY;
+        $time_span_yearly = NarouConst::TOPPAGE_TITLE_YEARLY;
         $yearly = NarouConst::YEARLY_TEXT;
-        $timeSpan_all = NarouConst::TOPPAGE_TITLE_ALL_TERMS;
+        $time_span_all = NarouConst::TOPPAGE_TITLE_ALL_TERMS;
         $all = NarouConst::ALL_TEXT;
 
         $title = '';
@@ -64,31 +63,31 @@ class TopRankController extends Controller
         $r_text_gan = '';
 
         if(!empty($request)){
-            $timeSpan = $request -> input(NarouConst::SELECT_TOP_TIMESPAN);
+            $time_span = $request -> input(NarouConst::SELECT_TOP_TIMESPAN);
             $cate = $request -> input(NarouConst::SELECT_TOP_CATEGORY);
             $gan = $request -> input(NarouConst::SELECT_TOP_GENERAL_ALL_NO);
-            if(!empty($timeSpan)){
-                if($timeSpan === NarouConst::WEEKLY_TEXT){
-                    $title = $timeSpan_weekly;
+            if(!empty($time_span)){
+                if($time_span === NarouConst::TIME_SPAN_WEEKLY){
+                    $title = $time_span_weekly;
                     $r_text_time = $weekly;
-                }else if($timeSpan === NarouConst::MONTHLY_TEXT){
-                    $title = $timeSpan_monthly;
+                }else if($time_span === NarouConst::TIME_SPAN_MONTHLY){
+                    $title = $time_span_monthly;
                     $r_text_time = $monthly;
-                }else if($timeSpan === NarouConst::HALF_TEXT){
-                    $title = $timeSpan_half;
+                }else if($time_span === NarouConst::TIME_SPAN_HALF){
+                    $title = $time_span_half;
                     $r_text_time = $half;
-                }else if($timeSpan === NarouConst::YEARLY_TEXT){
-                    $title = $timeSpan_yearly;
+                }else if($time_span === NarouConst::TIME_SPAN_YEARLY){
+                    $title = $time_span_yearly;
                     $r_text_time = $yearly;
-                }else if($timeSpan === NarouConst::ALL_TEXT){
-                    $title = $timeSpan_all;
+                }else if($time_span === NarouConst::TIME_SPAN_ALL){
+                    $title = $time_span_all;
                     $r_text_time = $all;
                 }else{
-                    $title = $timeSpan_weekly;
+                    $title = $time_span_weekly;
                     $r_text_time = $weekly;
                 };
             }else{
-                $title = $timeSpan_weekly;
+                $title = $time_span_weekly;
                 $r_text_time = $weekly;
             };
             if(!empty($cate)){
@@ -116,7 +115,7 @@ class TopRankController extends Controller
                 $r_text_gan = $gan_ov500;
             }
         }else{
-            $title = $timeSpan_weekly;
+            $title = $time_span_weekly;
             $r_text_time = $weekly;
             $r_text_cate = $cate_mark;
             $r_text_gan = $gan_ov500;
@@ -124,27 +123,6 @@ class TopRankController extends Controller
         return ['title' => $title, 'r_text_time' => $r_text_time, 'r_text_cate' => $r_text_cate, 'r_text_gan' => $r_text_gan];
     }
     
-
-    /**
-     * DBのmarkテーブルからカラム名が日付型のものをすべて取得
-     */
-    public function getDateList()
-    {
-        //日付のカラムを持つﾃｰﾌﾞﾙの１つから日付の配列を昇順に並べ替えて取得
-        $dateColumns = [];
-        $mark = new Mark;
-        $markColumnNames = $mark->getColumnNames();
-        foreach ($markColumnNames as $column) {
-            if (strpos($column, '-') !== false) {
-                $dateColumns[] = $column;
-            }
-        }
-        $this -> allToWeeks = count($dateColumns, COUNT_RECURSIVE);
-        return $dateColumns;
-
-    }
-
-
     /**
      * last update.
      */
@@ -160,10 +138,8 @@ class TopRankController extends Controller
      */
     public function generateTopRanking(Request $request)
     {
-        $ma = new Ma;
-        $result = $ma -> generateTopRanking($request);
-        
-        return $result;
+        $ma = new Ma;        
+        return $ma->generateTopRanking($request);
     }
 
     /**

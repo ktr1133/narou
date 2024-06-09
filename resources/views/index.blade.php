@@ -16,7 +16,7 @@
                 <div class="container clear">
                     <h3 class="section-title">ランキング</h3>
                     <div class="rank-text">Last Up Date：<time>{{$last_date}}</time></div>
-                    <form action="{{route('topRank.show')}}" method="get" class="rank_content">
+                    <form action="{{route('top-rank.show')}}" method="get" class="rank_content">
                         @csrf
                         <dl>
                             <div class="r-form-row">

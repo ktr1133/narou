@@ -57,7 +57,7 @@ $(function () {
 });
 
 /*-- 詳細ﾍﾟｰｼﾞにﾃﾞｰﾀを渡す-- */
-$('.js-detail-btn').on('click' ,function(){
+/*$('.js-detail-btn').on('click' ,function(){
     var text = 'ncode='
     var ncode =  text.concat($(this).getAttribute('id'))
     window.location.href = "detail.php?"+ncode

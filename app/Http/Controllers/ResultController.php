@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Consts\NarouConst;
 use App\Models\Mark;
-use App\Models\Ma;
 use DateTime;
 use App\Http\Requests\CreatePostRequest;
-use Illuminate\Support\Facades\DB;
+use App\Models\Ma;
 use Illuminate\Support\Facades\Log;
 
 
@@ -19,8 +18,11 @@ class ResultController extends Controller
      * @param CreatePostRequest $request
      */
     public function show(CreatePostRequest $request){
-        Log::debug($request);
+        // デバッグログを追加
+        Log::info('ResultController@showが呼び出されました');
+        Log::info('リクエストデータ:', $request->first());
         $select_data = $this->getSelectData($request);
+        Log::info('$this->getSelectData($request)が処理されました');
         $result = $this->generateRanking($request);
 
         return view('result', ['result' => $result, 'select_data' => $select_data]);
@@ -28,9 +30,13 @@ class ResultController extends Controller
 
     /**
      * Request Data change to Words.
+     * 
+     * @param CreatePostRequest $request
+     * @return array
      */
-    public function getSelectData(CreatePostRequest $request)
+    public function getSelectData(CreatePostRequest $request): array
     {
+        Log::info('Start getSelectData');
         $cate = $request -> input(NarouConst::SELECT_CREATE_CATEGORY);
         $time_span = $request -> input(NarouConst::SELECT_CREATE_TIMESPAN);
         $gan_num = $request -> input(NarouConst::INPUT_GENERAL_ALL_NO);
@@ -41,6 +47,7 @@ class ResultController extends Controller
         $unique_from = $request -> input(NarouConst::INPUT_UNIQUE_FROM);
         $unique_to = $request -> input(NarouConst::INPUT_UNIQUE_TO);
         $uf = $request -> input(NarouConst::SELECT_CREATE_FREQUENCY);
+        Log::info('end input-processing');
         //種別表示文
         if(!empty($cate)){
             if($cate===NarouConst::MARK){
@@ -55,6 +62,7 @@ class ResultController extends Controller
                 $cate_tex = NarouConst::CATEGORY_ERROR;
             }
         }
+        Log::info('end cate-tex');
         //期間表示文
         $time_span_tex = '';
         if(!empty($time_span)){
@@ -72,6 +80,7 @@ class ResultController extends Controller
                 $time_span_tex = null;
             }
         }
+        Log::info('end time-span-processing');
         //総話数表示文
         $gan_from_tex = '';
         $gan_to_tex = '';
@@ -87,6 +96,7 @@ class ResultController extends Controller
                 $gan_to_tex = '';
             }
         }
+        Log::info('end gan-num-processing');
         //ポイント数表示文
         $point_from_tex = '';
         $point_to_tex = '';
@@ -102,6 +112,7 @@ class ResultController extends Controller
                 $point_to_tex = '';
             }
         }
+        Log::info('end point-num-processing');
         //ユニークユーザ数表示文
         $unique_from_tex = '';
         $unique_to_tex = '';
@@ -117,7 +128,9 @@ class ResultController extends Controller
                 $unique_to_tex = '';
             }
         }
+        Log::info('end unique-num-processing');
         //平均更新頻度表示文
+        $frequency = '';
         if(!empty($uf)){
             if($uf ===NarouConst::FREQUENCY_1TIMEPERMONTH){
                 $frequency = NarouConst::FREQUENCY_TEXT_1TIMEPERMONTH;
@@ -129,6 +142,7 @@ class ResultController extends Controller
                 $frequency = '';
             }
         }
+        Log::info('end frequency-processing');
         return [
             NarouConst::SELECT_CREATE_CATEGORY => $cate_tex,
             NarouConst::SELECT_CREATE_TIMESPAN => $time_span_tex,
@@ -164,8 +178,9 @@ class ResultController extends Controller
      */
     public function getPeriod(CreatePostRequest $request)
     {
-        if(!empty($request)){
-            $range = $request -> input('r_time_span');
+        $validated_request = $request->validated();
+        if(!empty($validated_request)){
+            $range = $validated_request -> input('r_time_span');
             // 日付配列を取得
             $dateList = $this -> getDateList();
             // 現在の日付を取得
@@ -215,6 +230,7 @@ class ResultController extends Controller
      */
     function generateRanking(CreatePostRequest $request)
     {
-        return $this->generateRanking($request);
+        $ma = new Ma();
+        return $ma->generateRanking($request);
     }
 }

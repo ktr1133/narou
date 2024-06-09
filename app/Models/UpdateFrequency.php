@@ -9,16 +9,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 
-class Unique extends Model
+class UpdateFrequency extends Model
 {
-    protected $table = 'unique';
+    protected $table = 'update_frequency';
 
     protected $fillable = [
         'ncode',
-        'sum_all',
-        'sum_monthly',
-        'sum_half',
-        'sum_yearly',
+        'mean',
+        'mean_monthly',
+        'mean_half',
+        'mean_yearly',
         '2023-01-26 00:00:00',
         '2023-01-30 00:00:00',
         '2023-02-01 00:00:00',
@@ -90,7 +90,6 @@ class Unique extends Model
 
     use HasFactory;
 
-
      /**
      * テーブルのカラム名を取得
      * 
@@ -99,11 +98,11 @@ class Unique extends Model
 
      public function getColumnNames(): array
      {
-         return Schema::getColumnListing('unique');
+         return Schema::getColumnListing('update_frequency');
      }
  
       /**
-      * uniqueテーブルから対象となるカラムが0より大きな値のﾃﾞｰﾀを降順で並べ替えて全件取得
+      * update_frequencyテーブルから対象となるカラムが0より大きな値のﾃﾞｰﾀを昇順で並べ替えて全件取得
       * 
       * @return EloquentCollection
       */
@@ -136,7 +135,7 @@ class Unique extends Model
          $result = $origin
              ->filter( function ($rec) use ($weekly) {
                  return $rec[$weekly] > 0;
-             })->sortByDesc($weekly)->take(100);
+             })->sortByDesce($weekly)->take(100);
          $rank_w = null;
          $i=1;
          $before = 9999999999999;
@@ -183,7 +182,7 @@ class Unique extends Model
          }
  
          //half
-         $half = 'sum_half';
+         $half = 'mean_half';
          $origin = $this->getRankData();
          $result = $origin
              ->filter( function ($rec) use ($half) {
@@ -209,7 +208,7 @@ class Unique extends Model
          }
  
          //yearly
-         $yearly = 'sum_yearly';
+         $yearly = 'mean_yearly';
          $origin = $this->getRankData();
          $result = $origin
              ->filter( function ($rec) use ($yearly) {
@@ -235,7 +234,7 @@ class Unique extends Model
          }
  
          //all
-         $all = 'sum_all';
+         $all = 'mean';
          $origin = $this->getRankData();
          $result = $origin
              ->filter( function ($rec) use ($all) {

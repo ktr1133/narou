@@ -82,6 +82,8 @@ class NarouConst
     const FREQUENCY_VALUE_1TIMEPERHALF = 1/182;
     const FREQUENCY_VALUE_1TIMEPERYEAR = 1/365;
     const FREQUENCY_VALUE_ELSE = 0;
+    //詳細ページで使用
+    const UNRANKED = 'ランク外';
 
 
 

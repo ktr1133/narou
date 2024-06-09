@@ -2,9 +2,13 @@
 
 namespace App\Models;
 
+use App\Consts\NarouConst;
+use App\Http\Requests\DetailPostRequest;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+
 
 class Mark extends Model
 {
@@ -87,8 +91,181 @@ class Mark extends Model
 
     use HasFactory;
 
-    public function getColumnNames()
+     /**
+     * テーブルのカラム名を取得
+     * 
+     * @return array
+     */
+
+    public function getColumnNames(): array
     {
         return Schema::getColumnListing('mark');
+    }
+
+     /**
+     * Markテーブルから対象となるカラムが0より大きな値のﾃﾞｰﾀを昇順で並べ替えて全件取得
+     * 
+     * @return EloquentCollection
+     */
+    public function getRankData(): EloquentCollection
+    {
+        return $this->query()
+            ->select('*')
+            ->get();
+    }
+
+     /**
+     * ランキングデータ作成用
+     * 
+     * @param  DetailPostRequest $request
+     * @return ?array
+     */
+    public function calcRank(DetailPostRequest $request): ?array
+    {
+        //weekly
+        //日付のカラムを持つﾃｰﾌﾞﾙの１つから日付の配列を昇順に並べ替えて取得
+        $date_columns = [];
+        $column_names = $this->getColumnNames();
+        foreach ($column_names as $column) {
+            if (strpos($column, '-') !== false) {
+                $date_columns[] = $column;
+            }
+        }
+        $weekly = $date_columns[count($date_columns) - 1];
+        $origin = $this->getRankData();
+        $result = $origin
+            ->filter( function ($rec) use ($weekly) {
+                return $rec[$weekly] > 0;
+            })->sortBy($weekly)->take(50);
+        $rank_w = null;
+        $i=1;
+        $before = 9999999999999;
+        foreach($result as $rec){
+            if($rec[$weekly] ===$before){
+              $i = $i -1;
+            }
+            if($rec['ncode']===$request['ncode']){
+                $rank_w = $i;
+                break;
+            }else{
+              $i++;
+              $before = $rec[$weekly];
+            }
+        }
+        if ($rank_w === null){
+            $rank_w = NarouConst::UNRANKED;
+        }
+
+        //monthly
+        $monthly = 'mean_monthly';
+        $origin = $this->getRankData();
+        $result = $origin
+            ->filter( function ($rec) use ($monthly) {
+                return $rec[$monthly] > 0;
+            })->sortBy($monthly)->take(50);
+        $rank_m = null;
+        $i=1;
+        $before = 9999999999999;
+        foreach($result as $rec){
+            if($rec[$monthly] ===$before){
+              $i = $i -1;
+            }
+            if($rec['ncode']===$request['ncode']){
+                $rank_m = $i;
+                break;
+            }else{
+              $i++;
+              $before = $rec[$monthly];
+            }
+        }
+        if ($rank_m === null){
+            $rank_m = NarouConst::UNRANKED;
+        }
+
+        //half
+        $half = 'mean_half';
+        $origin = $this->getRankData();
+        $result = $origin
+            ->filter( function ($rec) use ($half) {
+                return $rec[$half] > 0;
+            })->sortBy($half)->take(50);
+        $rank_h = null;
+        $i=1;
+        $before = 9999999999999;
+        foreach($result as $rec){
+            if($rec[$half] ===$before){
+              $i = $i -1;
+            }
+            if($rec['ncode']===$request['ncode']){
+                $rank_h = $i;
+                break;
+            }else{
+              $i++;
+              $before = $rec[$half];
+            }
+        }
+        if ($rank_h === null){
+            $rank_h = NarouConst::UNRANKED;
+        }
+
+        //yearly
+        $yearly = 'mean_yearly';
+        $origin = $this->getRankData();
+        $result = $origin
+            ->filter( function ($rec) use ($yearly) {
+                return $rec[$yearly] > 0;
+            })->sortBy($yearly)->take(50);
+        $rank_y = null;
+        $i=1;
+        $before = 9999999999999;
+        foreach($result as $rec){
+            if($rec[$yearly] ===$before){
+              $i = $i -1;
+            }
+            if($rec['ncode']===$request['ncode']){
+                $rank_y = $i;
+                break;
+            }else{
+              $i++;
+              $before = $rec[$yearly];
+            }
+        }
+        if ($rank_y === null){
+            $rank_y = NarouConst::UNRANKED;
+        }
+
+        //all
+        $all = 'mean';
+        $origin = $this->getRankData();
+        $result = $origin
+            ->filter( function ($rec) use ($all) {
+                return $rec[$all] > 0;
+            })->sortBy($all)->take(50);
+        $rank_a = null;
+        $i=1;
+        $before = 9999999999999;
+        foreach($result as $rec){
+            if($rec[$all] ===$before){
+              $i = $i -1;
+            }
+            if($rec['ncode']===$request['ncode']){
+                $rank_a = $i;
+                break;
+            }else{
+              $i++;
+              $before = $rec[$all];
+            }
+        }
+        if ($rank_a === null){
+            $rank_a = NarouConst::UNRANKED;
+        }
+
+        return [
+            'weekly'  => $rank_w,
+            'monthly' => $rank_m,
+            'half'    => $rank_h,
+            'yearly'  => $rank_y,
+            'all'     => $rank_a,
+        ];
     }
 }

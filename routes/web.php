@@ -11,16 +11,12 @@ use App\Http\Requests\DetailPostRequest;
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [TopRankController::class, 'show'])->name('topRank.show');
+Route::get('/', [TopRankController::class, 'show'])->name('top-rank.show');
 
 Route::get('/guide', [GuideController::class, 'show'])->name('guide.show');
 
 Route::get('/create', [CreateController::class, 'show'])->name('create.show');
 
-Route::post('/create/result', [ResultController::class, 'show'])
-    ->name('result.show')
-    ->middleware(CreatePostRequest::class);
+Route::get('/create/result', [ResultController::class, 'show'])->name('result.show');
 
-Route::get('/create/detail', [DetailController::class, 'show'])
-    ->name('detail.show')
-    ->middleware(DetailPostRequest::class);
+Route::post('/detail', [DetailController::class, 'show'])->name('detail.show');
