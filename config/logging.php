@@ -4,6 +4,9 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
+use Monolog\Processor\UidProcessor;
 
 return [
 
@@ -18,7 +21,7 @@ return [
     |
     */
 
-    'default' => env('LOG_CHANNEL', 'stack'),
+    'default' => env('LOG_CHANNEL', 'custom'),
 
     /*
     |--------------------------------------------------------------------------
@@ -52,9 +55,18 @@ return [
 
     'channels' => [
 
+        'custom' => [
+            'driver' => 'monolog',
+            'handler' => StreamHandler::class,
+            'with' => [
+                'stream' => storage_path('logs/laravel-' . date('Y-m-d') . '.log'),
+            ],
+            'level' => 'debug',
+        ],
+
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', env('LOG_STACK', 'single')),
+            'channels' => ['daily'],
             'ignore_exceptions' => false,
         ],
 
@@ -68,9 +80,11 @@ return [
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
-            'replace_placeholders' => true,
+            //'level' => env('LOG_LEVEL', 'debug'),
+            //'days' => env('LOG_DAILY_DAYS', 14),
+            //'replace_placeholders' => true,
+            'level' => 'debug',
+            'days' => 14,
         ],
 
         'slack' => [

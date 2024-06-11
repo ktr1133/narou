@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Consts\NarouConst;
 use App\Http\Requests\DetailPostRequest;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Models\Calc;
 use App\Models\Ma;
@@ -22,15 +23,11 @@ class DetailController extends Controller
      */
     public function show(DetailPostRequest $request){
         // デバッグログを追加
+        Log::info($request['ncode']);
         Log::info('DetailController@showが呼び出されました');
-        Log::info('generateDetailWork 処理開始');
         $result = $this->generateDetailWork($request);
-        Log::info('generateDetailWork 処理完了');
-        Log::debug($result);
         
-        Log::info('getGraghData 処理開始');
         $gragh_data = $this->getGraghData($request);
-        Log::info('getGraghData 処理完了');
 
         return view('detail', ['result' => $result, 'gragh_data' => $gragh_data]);
     }
@@ -165,9 +162,12 @@ class DetailController extends Controller
      */
     function generateDetailWork(DetailPostRequest $request): array
     {
+        Log::info('generateDetailWorkの処理開始');
         $ma = new Ma;
-        $detail_builder = $ma->getDetailWork($request);
-        $detail = $detail_builder->first();
+        Log::debug('$request[ncode]: '.$request['ncode']);
+        $detail = $ma->getDetailWork($request);
+        Log::info('getDetailWorkの処理終了');
+        Log::info('getDetailWork取得結果: '.$detail);
         
         //Detailﾍﾟｰｼﾞﾍｯﾀﾞｰ部分表示項目
         $title = $detail['title'];
@@ -175,21 +175,7 @@ class DetailController extends Controller
         $general_all_no = $detail['general_all_no'];
         $update_fre = $detail['mean_uf'];
                 
-        Log::info('Detailﾍﾟｰｼﾞﾍｯﾀﾞｰ部分表示項目 取得完了');
-        $sum_p = $ma -> getPoint($request);
-        Log::info('getPoint 処理完了');
-        $point_a = $sum_p;
-        
-        $sum_u = $ma -> getUnique($request);
-        Log::info('getUnique 処理完了');
-        $unique_a = $sum_u;
-        $mean_mk = $ma -> getMark($request);
-        Log::info('getMark 処理完了');
-        $mark_a = $mean_mk;
-        $mean_c = $ma -> getCalc($request);
-        Log::info('getCalc 処理完了');
-        $calc_a = $mean_c;
-        
+        Log::info('Detailﾍﾟｰｼﾞﾍｯﾀﾞｰ部分表示項目 取得完了');        
         
         $time_spans = $this -> timeSpan();
         Log::info('timeSpan 処理完了');
@@ -276,12 +262,6 @@ class DetailController extends Controller
                 'yearly'  => $rank_un_y,
                 'all'     => $rank_un_a,
             ],
-            'record' => [
-                'point'  => $point_a,
-                'unique' => $unique_a,
-                'mark'   => $mark_a,
-                'calc'   => $calc_a,
-            ]
         ];
     }
 
@@ -289,57 +269,45 @@ class DetailController extends Controller
      * グラフ用データ作成
      * 
      * @param  DetailPostRequest $request
-     * @return array
+     * @return JsonResponse
      */
-    public function getGraghData(DetailPostRequest $request): array
+    public function getGraghData(DetailPostRequest $request): JsonResponse
     {
-        $time_spans_for_g_temp = [];
-        $point_for_g_temp = [];
-        $unique_for_g_temp = [];
-        $mark_for_g_temp = [];
-        $calc_for_g_temp = [];
+        $time_spans_for_g = [];
+        $point_for_g = [];
+        $unique_for_g = [];
+        $mark_for_g = [];
+        $calc_for_g = [];
+    
         //期間別の実日付のリストを作成
-        $time_spans = $this -> timeSpan();
+        $time_spans = $this->timeSpan();
         $time_spans_all = $time_spans['all'];
+    
         //グラフ描画用ﾃﾞｰﾀ処理開始
-        $detailWork = $this->generateDetailWork($request);
-        $point_a = $detailWork['record']['point'];
-        $unique_a = $detailWork['record']['unique'];
-        $mark_a = $detailWork['record']['mark'];
-        $calc_a = $detailWork['record']['calc'];
+        $ma = new Ma();
+        $point_a = $ma->getPoint($request);
+        $unique_a = $ma->getUnique($request);
+        $mark_a = $ma->getMark($request);
+        $calc_a = $ma->getCalc($request);
+    
         //グラフ描画用ﾃﾞｰﾀｾｯﾄ取得完了
-      
-        foreach ($time_spans_all as $time){
-          $t_temp = explode(' ', $time);
-          $t = $t_temp[0];
-          $time_spans_for_g_temp[] = "'".$t."'";
-          $p = $point_a[$time];
-          $point_for_g_temp[] = $p;
-          $un = $unique_a[$time];
-          $unique_for_g_temp[] = $un;
-          $mk = $mark_a[$time];
-          $mark_for_g_temp[] = $mk;
-          $ca = $calc_a[$time];
-          $calc_for_g_temp[] = $ca;
+        foreach ($time_spans_all as $time) {
+            $t_temp = explode(' ', $time);
+            $t = $t_temp[0];
+            $time_spans_for_g[] = $t;
+            $point_for_g[] = $point_a[$time];
+            $unique_for_g[] = $unique_a[$time];
+            $mark_for_g[] = $mark_a[$time];
+            $calc_for_g[] = $calc_a[$time];
         }
-        krsort($time_spans_for_g_temp);
-        $time_spans_for_g = implode(', ', $time_spans_for_g_temp);
-        krsort($point_for_g_temp);
-        $point_for_g = implode(', ', $point_for_g_temp);
-        krsort($unique_for_g_temp);
-        $unique_for_g = implode(', ', $unique_for_g_temp);
-        krsort($mark_for_g_temp);
-        $mark_for_g = implode(', ', $mark_for_g_temp);
-        krsort($calc_for_g_temp);
-        $calc_for_g = implode(', ', $calc_for_g_temp);
-      
-        return [
+    
+        return response()->json([
             'time_spans_for_g' => $time_spans_for_g,
             'mark_for_g'       => $mark_for_g,
             'calc_for_g'       => $calc_for_g,
             'point_for_g'      => $point_for_g,
-            'unique_for_g'     => $unique_for_g
-        ];
+            'unique_for_g'     => $unique_for_g,
+        ]);
     }
 
 }

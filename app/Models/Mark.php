@@ -110,7 +110,7 @@ class Mark extends Model
     public function getRankData(): EloquentCollection
     {
         return $this->query()
-            ->select('*')
+            ->select('mark.*')
             ->get();
     }
 
@@ -136,7 +136,7 @@ class Mark extends Model
         $result = $origin
             ->filter( function ($rec) use ($weekly) {
                 return $rec[$weekly] > 0;
-            })->sortBy($weekly)->take(50);
+            })->sortBy($weekly);
         $rank_w = null;
         $i=1;
         $before = 9999999999999;
@@ -162,7 +162,7 @@ class Mark extends Model
         $result = $origin
             ->filter( function ($rec) use ($monthly) {
                 return $rec[$monthly] > 0;
-            })->sortBy($monthly)->take(50);
+            })->sortBy($monthly);
         $rank_m = null;
         $i=1;
         $before = 9999999999999;
@@ -188,7 +188,7 @@ class Mark extends Model
         $result = $origin
             ->filter( function ($rec) use ($half) {
                 return $rec[$half] > 0;
-            })->sortBy($half)->take(50);
+            })->sortBy($half);
         $rank_h = null;
         $i=1;
         $before = 9999999999999;
@@ -214,7 +214,7 @@ class Mark extends Model
         $result = $origin
             ->filter( function ($rec) use ($yearly) {
                 return $rec[$yearly] > 0;
-            })->sortBy($yearly)->take(50);
+            })->sortBy($yearly);
         $rank_y = null;
         $i=1;
         $before = 9999999999999;
@@ -240,7 +240,7 @@ class Mark extends Model
         $result = $origin
             ->filter( function ($rec) use ($all) {
                 return $rec[$all] > 0;
-            })->sortBy($all)->take(50);
+            })->sortBy($all);
         $rank_a = null;
         $i=1;
         $before = 9999999999999;

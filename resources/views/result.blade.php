@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
-  @include('layouts.common')
+<head>
+@include('layouts.common')
+<!-- 固有CSS -->
+<link rel="stylesheet" href="{{asset('css/result.css')}}">
+</head>
   <body>
       <!--↓サイトコンテンツ-->
       <button id="js-pagetop" class="pagetop"><span class="pagetop__arrow"></span></button>

@@ -20,11 +20,11 @@ class ResultController extends Controller
     public function show(CreatePostRequest $request){
         // デバッグログを追加
         Log::info('ResultController@showが呼び出されました');
-        Log::info('リクエストデータ:', $request->first());
         $select_data = $this->getSelectData($request);
-        Log::info('$this->getSelectData($request)が処理されました');
+        Log::info('$this->getSelectData($request)の処理が終了');
+        Log::info('$this->generateRanking($request)の処理を開始');
         $result = $this->generateRanking($request);
-
+        Log::info('$this->generateRanking($request)の処理が終了');
         return view('result', ['result' => $result, 'select_data' => $select_data]);
     }
 
@@ -47,7 +47,6 @@ class ResultController extends Controller
         $unique_from = $request -> input(NarouConst::INPUT_UNIQUE_FROM);
         $unique_to = $request -> input(NarouConst::INPUT_UNIQUE_TO);
         $uf = $request -> input(NarouConst::SELECT_CREATE_FREQUENCY);
-        Log::info('end input-processing');
         //種別表示文
         if(!empty($cate)){
             if($cate===NarouConst::MARK){
@@ -62,7 +61,6 @@ class ResultController extends Controller
                 $cate_tex = NarouConst::CATEGORY_ERROR;
             }
         }
-        Log::info('end cate-tex');
         //期間表示文
         $time_span_tex = '';
         if(!empty($time_span)){
@@ -80,7 +78,6 @@ class ResultController extends Controller
                 $time_span_tex = null;
             }
         }
-        Log::info('end time-span-processing');
         //総話数表示文
         $gan_from_tex = '';
         $gan_to_tex = '';
@@ -96,7 +93,6 @@ class ResultController extends Controller
                 $gan_to_tex = '';
             }
         }
-        Log::info('end gan-num-processing');
         //ポイント数表示文
         $point_from_tex = '';
         $point_to_tex = '';
@@ -112,7 +108,6 @@ class ResultController extends Controller
                 $point_to_tex = '';
             }
         }
-        Log::info('end point-num-processing');
         //ユニークユーザ数表示文
         $unique_from_tex = '';
         $unique_to_tex = '';
@@ -128,7 +123,6 @@ class ResultController extends Controller
                 $unique_to_tex = '';
             }
         }
-        Log::info('end unique-num-processing');
         //平均更新頻度表示文
         $frequency = '';
         if(!empty($uf)){
@@ -142,7 +136,6 @@ class ResultController extends Controller
                 $frequency = '';
             }
         }
-        Log::info('end frequency-processing');
         return [
             NarouConst::SELECT_CREATE_CATEGORY => $cate_tex,
             NarouConst::SELECT_CREATE_TIMESPAN => $time_span_tex,
@@ -231,6 +224,6 @@ class ResultController extends Controller
     function generateRanking(CreatePostRequest $request)
     {
         $ma = new Ma();
-        return $ma->generateRanking($request);
+        return $ma->getRankingResult($request);
     }
 }

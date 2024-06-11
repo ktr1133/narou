@@ -109,7 +109,7 @@ class Point extends Model
      public function getRankData(): EloquentCollection
      {
          return $this->query()
-             ->select('*')
+             ->select('point.*')
              ->get();
      }
  
@@ -135,7 +135,7 @@ class Point extends Model
          $result = $origin
              ->filter( function ($rec) use ($weekly) {
                  return $rec[$weekly] > 0;
-             })->sortByDesc($weekly)->take(100);
+             })->sortByDesc($weekly);
          $rank_w = null;
          $i=1;
          $before = 9999999999999;
@@ -161,7 +161,7 @@ class Point extends Model
          $result = $origin
              ->filter( function ($rec) use ($monthly) {
                  return $rec[$monthly] > 0;
-             })->sortByDesc($monthly)->take(100);
+             })->sortByDesc($monthly);
          $rank_m = null;
          $i=1;
          $before = 9999999999999;
@@ -187,7 +187,7 @@ class Point extends Model
          $result = $origin
              ->filter( function ($rec) use ($half) {
                  return $rec[$half] > 0;
-             })->sortByDesc($half)->take(100);
+             })->sortByDesc($half);
          $rank_h = null;
          $i=1;
          $before = 9999999999999;
@@ -213,7 +213,7 @@ class Point extends Model
          $result = $origin
              ->filter( function ($rec) use ($yearly) {
                  return $rec[$yearly] > 0;
-             })->sortByDesc($yearly)->take(100);
+             })->sortByDesc($yearly);
          $rank_y = null;
          $i=1;
          $before = 9999999999999;
@@ -239,7 +239,7 @@ class Point extends Model
          $result = $origin
              ->filter( function ($rec) use ($all) {
                  return $rec[$all] > 0;
-             })->sortByDesc($all)->take(100);
+             })->sortByDesc($all);
          $rank_a = null;
          $i=1;
          $before = 9999999999999;

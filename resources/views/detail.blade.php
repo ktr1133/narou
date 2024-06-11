@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="jp">
+<head>
   @include('layouts.common')
+  <!-- 固有CSS -->
+  <link rel="stylesheet" href="{{asset('css/app.css')}}">
+</head>
+    
 <body>
 
   <!--↓サイトコンテンツ-->
@@ -112,57 +117,61 @@
   <script
     src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@next/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <script>
-    var ctx = document.getElementById('chart_mk');
-    var myChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [{{ $gragh_data['time_spans_for_g'] }} >],
-        datasets: [{
-          label: '指標1の値',
-          data: [{{ $gragh_data['mark_for_g'] }}],
-          borderColor: '#5eccb0ff',
-        }]
-      }
-    })
+    document.addEventListener('DOMContentLoaded', function () {
+        var graghData = @json($gragh_data);
+  
+        var ctxMk = document.getElementById('chart_mk');
+        var myChartMk = new Chart(ctxMk, {
+            type: 'line',
+            data: {
+                labels: graghData.time_spans_for_g,
+                datasets: [{
+                    label: '指標1の値',
+                    data: graghData.mark_for_g,
+                    borderColor: '#5eccb0ff',
+                }]
+            }
+        });
+  
+        var ctxCalc = document.getElementById('chart_calc');
+        var myChartCalc = new Chart(ctxCalc, {
+            type: 'line',
+            data: {
+                labels: graghData.time_spans_for_g,
+                datasets: [{
+                    label: '指標2の値',
+                    data: graghData.calc_for_g,
+                    borderColor: '#bed630',
+                }]
+            }
+        });
 
-    var ctx = document.getElementById('chart_calc');
-    var myChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [{{ $gragh_data['time_spans_for_g'] }}],
-        datasets: [{
-          label: '指標2の値',
-          data: [{{ $gragh_data['calc_for_g'] }}],
-          borderColor: '#bed630',
-        }]
-      }
-    })
-
-    var ctx = document.getElementById('chart_po');
-    var myChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [{{ $gragh_data['time_spans_for_g'] }}],
-        datasets: [{
-          label: '週間獲得ポイント数',
-          data: [{{ $gragh_data['point_for_g'] }}],
-          borderColor: '#f25814',
-        }]
-      }
-    })
-
-    var ctx = document.getElementById('chart_un');
-    var myChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [{{ $gragh_data['time_spans_for_g'] }}],
-        datasets: [{
-          label: '週間ユニークユーザ数',
-          data: [{{ $gragh_data['unique_for_g'] }}],
-          borderColor: '#6fa8dc',
-        }]
-      }
-    })
+        var ctxPo = document.getElementById('chart_po');
+        var myChartPo = new Chart(ctxPo, {
+            type: 'line',
+            data: {
+                labels: graghData.time_spans_for_g,
+                datasets: [{
+                    label: '週間獲得ポイント数',
+                    data: graghData.point_for_g,
+                    borderColor: '#f25814',
+                }]
+            }
+        });
+  
+        var ctxUn = document.getElementById('chart_un');
+        var myChartUn = new Chart(ctxUn, {
+            type: 'line',
+            data: {
+                labels: graghData.time_spans_for_g,
+                datasets: [{
+                    label: '週間ユニークユーザ数',
+                    data: graghData.unique_for_g,
+                    borderColor: '#6fa8dc',
+                }]
+            }
+        });
+    });
   </script>
 </body>
 </html>

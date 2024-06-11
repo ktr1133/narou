@@ -247,6 +247,7 @@ class Ma extends Model
         $unique_num = $request->input(NarouConst::INPUT_UNIQUE);
         $uf = $request -> input(NarouConst::SELECT_CREATE_FREQUENCY);
 
+        $tables = array();
         $gan_flg = false;
         if ($gan_num) {
             $gan_flg = true;
@@ -283,72 +284,52 @@ class Ma extends Model
         switch ($time_span){
             case NarouConst::TIME_SPAN_WEEKLY:
                 $time_span_column_point  = 'point.'.$latest_date_column_name;
-                $time_span_column_unique  = 'unque.'.$latest_date_column_name;
+                $time_span_column_unique  = 'unique.'.$latest_date_column_name;
                 $time_span_column_mark  = 'mark.'.$latest_date_column_name;
                 $time_span_column_calc  = 'calc.'.$latest_date_column_name;
                 $time_span_column_uf  = 'update_frequency.'.$latest_date_column_name;
-                $column = ($cate === NarouConst::MARK) ? $latest_date_column_name : $latest_date_column_name;
                 break;
             case NarouConst::TIME_SPAN_MONTHLY:
                 $time_span_column_point  = 'point.sum_monthly';
-                $time_span_column_unique  = 'unque.sum_monthly';
+                $time_span_column_unique  = 'unique.sum_monthly';
                 $time_span_column_mark  = 'mark.mean_monthly';
                 $time_span_column_calc  = 'calc.mean_monthly';
                 $time_span_column_uf  = 'update_frequency.mean_monthly';
-                $column = ($cate === NarouConst::MARK||NarouConst::CALC) ? $this -> mean_monthly : $this -> sum_monthly;
                 break;
             case NarouConst::TIME_SPAN_HALF:
                 $time_span_column_point  = 'point.sum_half';
-                $time_span_column_unique  = 'unque.sum_half';
+                $time_span_column_unique  = 'unique.sum_half';
                 $time_span_column_mark  = 'mark.mean_half';
                 $time_span_column_calc  = 'calc.mean_half';
                 $time_span_column_uf  = 'update_frequency.mean_half';
-                $column = ($cate === NarouConst::MARK||NarouConst::CALC) ? $this -> mean_half : $this -> sum_half;
                 break;
             case NarouConst::TIME_SPAN_YEARLY:
                 $time_span_column_point  = 'point.sum_yearly';
-                $time_span_column_unique  = 'unque.sum_yearly';
+                $time_span_column_unique  = 'unique.sum_yearly';
                 $time_span_column_mark  = 'mark.mean_yearly';
                 $time_span_column_calc  = 'calc.mean_yearly';
                 $time_span_column_uf  = 'update_frequency.mean_yearly';
-                $column = ($cate === NarouConst::MARK||NarouConst::CALC) ? $this -> mean_yearly : $this -> sum_yearly;
                 break;
             case NarouConst::TIME_SPAN_ALL:
                 $time_span_column_point  = 'point.sum_all';
-                $time_span_column_unique  = 'unque.sum_all';
+                $time_span_column_unique  = 'unique.sum_all';
                 $time_span_column_mark  = 'mark.mean';
                 $time_span_column_calc  = 'calc.mean';
                 $time_span_column_uf  = 'update_frequency.mean';
-                $column = ($cate === NarouConst::MARK||NarouConst::CALC) ? $this -> mean_all : $this -> sum_all;
                 break;
             default:
                 $time_span_column_point  = 'point.sum_all';
-                $time_span_column_unique  = 'unque.sum_all';
+                $time_span_column_unique  = 'unique.sum_all';
                 $time_span_column_mark  = 'mark.mean';
                 $time_span_column_calc  = 'calc.mean';
                 $time_span_column_uf  = 'update_frequency.mean';
-                $column = ($cate === NarouConst::MARK||NarouConst::CALC) ? $this -> mean_all : $this -> sum_all;
             break;
         }
     
         //sqlで使用するﾃｰﾌﾞﾙの指定
         $tables_set = array();
-        if(!empty($point_num)) {
-            $tables_set[] = [
-                'table' => NarouConst::TBL_POINT,
-                'column' => $time_span_column_point,
-            ];
-        } else if (!empty($unique_num)) {
-            $tables_set[] = [
-                'table' => NarouConst::TBL_UNIQUE,
-                'column' => $time_span_column_unique,
-            ];
-        } else if (!empty($uf)) {
-            $tables_set[] = [
-                'table' => NarouConst::TBL_UF,
-                'column' => $time_span_column_uf,
-            ];
-        } else if ($cate===NarouConst::MARK) {
+        Log::info('cate: '.$cate);
+        if ($cate===NarouConst::MARK) {
             $tables_set[] = [
                 'table' => NarouConst::TBL_MARK,
                 'column' => $time_span_column_mark,
@@ -359,36 +340,58 @@ class Ma extends Model
                 'column' => $time_span_column_calc,
             ];
         }
+        if($point_flg) {
+            $tables_set[] = [
+                'table' => NarouConst::TBL_POINT,
+                'column' => $time_span_column_point,
+            ];
+        }
+        if ($unique_flg) {
+            $tables_set[] = [
+                'table' => NarouConst::TBL_UNIQUE,
+                'column' => $time_span_column_unique,
+            ];
+        }
+        if ($frequency_flg) {
+            $tables_set[] = [
+                'table' => NarouConst::TBL_UF,
+                'column' => $time_span_column_uf,
+            ];
+        }
+        
+        Log::info('結合する必要のあるﾃｰﾌﾞﾙﾘｽﾄ');
+        Log::debug($tables_set);
 
         //ベースクエリ
         $query =  $this->query();
 
         //利用するﾃｰﾌﾞﾙの紐づけ
-        if(empty($tables_set)){
+        if(!empty($tables_set)){
             foreach($tables_set as $ele){
-                $query->leftjoin($ele['table'], 'ma.ncode', '=', $ele['table'].'.ncode')
-                        ->select();
+                $query->leftjoin($ele['table'], 'ma.ncode', '=', $ele['table'].'.ncode');
             };
         }
+
         
+        Log::info('point_flg: '.$point_flg.' unique_flg: '.$unique_flg.' gan_flg: '.$gan_flg.' uf_flg: '.$frequency_flg);
         //ﾎﾟｲﾝﾄに関する条件設定
         if ($point_flg) {
             if ($point_from) {
-                $query->where('point.'.$column, '>=', $point_from);
+                $query->where($time_span_column_point, '>=', $point_from);
             };
             if ($point_to) {
-                $query->where('point.'.$column, '<=', $point_to);
+                $query->where($time_span_column_point, '<=', $point_to);
             }
         }
 
         //ﾕﾆｰｸﾕｰｻﾞ数に関する条件設定
         if ($unique_flg) {
             if ($unique_from) {
-                $query->where('unique.'.$column, '>=', $unique_from);
+                $query->where($time_span_column_unique, '>=', $unique_from);
             };
             if ($unique_to) {
-                $query->where('unique.'.$column, '<=', $unique_to);
-            }          
+                $query->where($time_span_column_unique, '<=', $unique_to);
+            }
         }
 
         //総和数に関する条件設定
@@ -404,31 +407,31 @@ class Ma extends Model
         //更新頻度に関する条件設定
         if ($frequency_flg) {
             if ($uf===NarouConst::FREQUENCY_1TIMEPERDAY) {
-                $query -> where('update_frequency.'.$column,'>=',NarouConst::FREQUENCY_VALUE_1TIMEPERDAY);
+                $query -> where($time_span_column_uf,'>=',NarouConst::FREQUENCY_VALUE_1TIMEPERDAY);
             } else if ($uf===NarouConst::FREQUENCY_1TIMEPERMONTH) {
-                $query -> where('update_frequency.'.$column,'>=',NarouConst::FREQUENCY_VALUE_1TIMEPERMONTH);
+                $query -> where($time_span_column_uf,'>=',NarouConst::FREQUENCY_VALUE_1TIMEPERMONTH);
             } else if ($uf===NarouConst::FREQUENCY_1TIMEPERHALF) {
-                $query -> where('update_frequency.'.$column,'>=',NarouConst::FREQUENCY_VALUE_1TIMEPERHALF);
+                $query -> where($time_span_column_uf,'>=',NarouConst::FREQUENCY_VALUE_1TIMEPERHALF);
             } else if ($uf===NarouConst::FREQUENCY_1TIMEPERYEAR) {
-                $query -> where('update_frequency.'.$column,'>=',NarouConst::FREQUENCY_VALUE_1TIMEPERYEAR);
+                $query -> where($time_span_column_uf,'>=',NarouConst::FREQUENCY_VALUE_1TIMEPERYEAR);
             } else if ($uf===NarouConst::FREQUENCY_ELSE) {
-                $query -> where('update_frequency.'.$column,'>=',NarouConst::FREQUENCY_VALUE_ELSE);
+                $query -> where($time_span_column_uf,'>=',NarouConst::FREQUENCY_VALUE_ELSE);
             }
         };
 
         //並べ替えの対象となるカラムの特定
         $ascending_flg = false;
         if ($cate===NarouConst::MARK) {
-            $main_column = 'mark.'.$column;
+            $main_column = $time_span_column_mark;
             $ascending_flg = true;
         } else if ($cate===NarouConst::CALC) {
-            $main_column = 'calc.'.$column;
+            $main_column = $time_span_column_calc;
             $ascending_flg = false;
         } else if ($cate===NarouConst::POINT) {
-            $main_column = 'point.'.$column;
+            $main_column = $time_span_column_point;
             $ascending_flg = false;
         } else if ($cate===NarouConst::UNIQUE) {
-            $main_column = 'unique.'.$column;
+            $main_column = $time_span_column_unique;
             $ascending_flg = false;
         }
 
@@ -467,22 +470,31 @@ class Ma extends Model
      */
     public function getDetailWork(DetailPostRequest $request): Model
     {
-        Log::info('getDetailWorkﾒｿｯﾄﾞ引数$request');
-        Log::debug($request);
-        return $this->query()
-            ->where('ma.ncode','=', $request['ncode'])
-            ->select('*')
-            ->first();
+        Log::info('getDetailWorkの処理開始');
+        $query = $this->query()
+                      ->where('ma.ncode', '=', $request['ncode'])
+                      ->select('ma.*'); // テーブル名の指定が必要
+        
+        Log::debug('クエリ: ' . $query->toSql(), $query->getBindings());
+        $detail = $query->first();
+        if ($detail) {
+            Log::info('取得した詳細:', $detail->toArray());
+        } else {
+            Log::warning('指定されたncodeに一致するデータが見つかりませんでした。');
+        }
+    
+        return $detail;
     }
 
      /**
      * 対象作品のﾃﾞｰﾀをpointテーブルから取得
      * 
-     * @param  Request $request
+     * @param  DetailPostRequest $request
      * @return Model
      */
-    public function getPoint(Request $request): Model
+    public function getPoint(DetailPostRequest $request): Model
     {
+        Log::info('getPoint 処理開始');
         return $this->query()
             ->leftJoin(
                 NarouConst::TBL_POINT,
@@ -503,11 +515,12 @@ class Ma extends Model
      /**
      * 対象作品のﾃﾞｰﾀをuniqueテーブルから取得
      * 
-     * @param  Request $request
+     * @param  DetailPostRequest $request
      * @return Model
      */
-    public function getUnique(Request $request): Model
+    public function getUnique(DetailPostRequest $request): Model
     {
+        Log::info('getUnique 処理開始');
         return $this->query()
             ->leftJoin(
                 NarouConst::TBL_UNIQUE,
@@ -528,11 +541,12 @@ class Ma extends Model
      /**
      * 対象作品のﾃﾞｰﾀをmarkテーブルから取得
      * 
-     * @param  Request $request
+     * @param  DetailPostRequest $request
      * @return Model
      */
-    public function getMark(Request $request): Model
+    public function getMark(DetailPostRequest $request): Model
     {
+        Log::info('getMark 処理開始');
         return $this->query()
             ->leftJoin(
                 NarouConst::TBL_MARK,
@@ -553,11 +567,12 @@ class Ma extends Model
      /**
      * 対象作品のﾃﾞｰﾀをupdate_frequencyテーブルから取得
      * 
-     * @param  Request $request
+     * @param  DetailPostRequest $request
      * @return Model
      */
-    public function getUF(Request $request): Model
+    public function getUF(DetailPostRequest $request): Model
     {
+        Log::info('getUF 処理開始');
         return $this->query()
             ->leftJoin(
                 NarouConst::TBL_UF,
@@ -578,11 +593,12 @@ class Ma extends Model
      /**
      * 対象作品のﾃﾞｰﾀをcalcテーブルから取得
      * 
-     * @param  Request $request
+     * @param  DetailPostRequest $request
      * @return Model
      */
-    public function getCalc(Request $request): Model
+    public function getCalc(DetailPostRequest $request): Model
     {
+        Log::info('getCalc 処理開始');
         return $this->query()
             ->leftJoin(
                 NarouConst::TBL_CALC,
