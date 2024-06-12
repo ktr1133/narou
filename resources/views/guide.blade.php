@@ -10,11 +10,11 @@
 
 <!--↓サイトコンテンツ-->
 <button id="js-pagetop" class="pagetop"><span class="pagetop__arrow"></span></button>
-<?php require_once('./PHPparts/nav.php')?>
+@include("layouts.nav")
 
 <ol>
     <div class="container clear">
-        <li><a href="https://freenovelanalysis.com/">Home</a></li>
+        <li><a href="{{route('top-rank.show')}}">Home</a></li>
         <li>Guide</li>
     </div>
 </ol>
@@ -121,11 +121,11 @@
                 </p>
                 <div class="article-wrapper">
                     <h6 class="article-header">メニューバーから「Create」を選択</h6>
-                    <img src="./img/ランキング作成step1.png" alt="" class="g-img">
+                    <img src="{{ asset('img/ランキング作成step1.png') }}" alt="" class="g-img">
                     <h6 class="article-header">タグから「作品」か「作者」を選択（デフォルトは「作品」）</h6>
-                    <img src="./img/ランキング作成step2.png" alt="" class="g-img">
+                    <img src="{{ asset('img/ランキング作成step2.png') }}" alt="" class="g-img">
                     <h6 class="article-header">【作品編】①から④のプルダウンを各種選択し、作成ボタンをクリック</h6>
-                    <img src="./img/ランキング作成step3.png" alt="" class="g-img">
+                    <img src="{{ asset('img/ランキング作成step3.png') }}" alt="" class="g-img">
                     <dl>
                         <div class="g-panel-row">
                             <dt>総話数</dt>
@@ -133,7 +133,7 @@
                         </div>
                     </dl>
                     <h6 class="article-header">【作者編】①から⑥のプルダウンを各種選択し、作成ボタンをクリック</h6>
-                    <img src="./img/ランキング作成step4.png" alt="" class="g-img">
+                    <img src="{{ asset('img/ランキング作成step4.png') }}" alt="" class="g-img">
                     <dl>
                         <div class="g-panel-row">
                             <dt>ポイント合計</dt>
@@ -331,6 +331,6 @@
 <!-- jQueryのライブラリー本体を読み込む -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <!-- 必ずjQuery本体を読み込んだ後にjQueryで書いたファイルを読み込む-->
-<script src="./js/main.js"></script>
+<script src="{{ asset('js/main.js') }}"></script>
 </body>
 </html>
