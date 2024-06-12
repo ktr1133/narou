@@ -49,12 +49,40 @@
           <canvas id="chart_mk" class="canvas"></canvas>
           <div class="c-card-rank-wrapper">
             <div class="c-c-r-row">
-              <div class="row-item"><dt>週間</dt><dd>{{ $result['rank_mark']['weekly'] }}<span>位</span></dd></div>
-              <div class="row-item"><dt>月間</dt><dd>{{ $result['rank_mark']['monthly'] }}<span>位</span></dd></div>
+              <div class="row-item"><dt>週間</dt><dd>{{ $result['rank_mark']['weekly'] }}
+              <span>
+                @php
+                if ($result['rank_mark']['weekly'] !== 'ランク外') {
+                  echo '位';
+                }
+                @endphp
+              </span></dd></div>
+              <div class="row-item"><dt>月間</dt><dd>{{ $result['rank_mark']['monthly'] }}
+                <span>
+                  @php
+                  if ($result['rank_mark']['monthly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
             </div>
             <div class="c-c-r-row">
-              <div class="row-item"><dt>年間</dt><dd>{{ $result['rank_mark']['yearly'] }}<span>位</span></dd></div>
-              <div class="row-item"><dt>累計期間</dt><dd>{{ $result['rank_mark']['all'] }}<span>位</span></dd></div>
+              <div class="row-item"><dt>年間</dt><dd>{{ $result['rank_mark']['yearly'] }}
+                <span>
+                  @php
+                  if ($result['rank_mark']['yearly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
+              <div class="row-item"><dt>累計期間</dt><dd>{{ $result['rank_mark']['all'] }}
+                <span>
+                  @php
+                  if ($result['rank_mark']['all'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
             </div>
           </div>
         </div>
@@ -63,12 +91,40 @@
           <canvas id="chart_calc" class="canvas"></canvas>
           <div class="c-card-rank-wrapper">
             <div class="c-c-r-row">
-              <div class="row-item"><dt>週間</dt><dd>{{ $result['rank_calc']['weekly'] }}<span>位</span></dd></div>
-              <div class="row-item"><dt>月間</dt><dd>{{ $result['rank_calc']['monthly'] }}<span>位</span></dd></div>
+              <div class="row-item"><dt>週間</dt><dd>{{ $result['rank_calc']['weekly'] }}
+                <span>
+                  @php
+                  if ($result['rank_calc']['weekly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
+              <div class="row-item"><dt>月間</dt><dd>{{ $result['rank_calc']['monthly'] }}
+                <span>
+                  @php
+                  if ($result['rank_calc']['monthly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
             </div>
             <div class="c-c-r-row">
-              <div class="row-item"><dt>年間</dt><dd>{{ $result['rank_calc']['yearly'] }}<span>位</span></dd></div>
-              <div class="row-item"><dt>累計期間</dt><dd>{{ $result['rank_calc']['all'] }}<span>位</span></dd></div>
+              <div class="row-item"><dt>年間</dt><dd>{{ $result['rank_calc']['yearly'] }}
+                <span>
+                  @php
+                  if ($result['rank_calc']['yearly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
+              <div class="row-item"><dt>累計期間</dt><dd>{{ $result['rank_calc']['all'] }}
+                <span>
+                  @php
+                  if ($result['rank_calc']['all'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
             </div>
           </div>
         </div>
@@ -77,12 +133,40 @@
           <canvas id="chart_po" class="canvas"></canvas>
           <div class="c-card-rank-wrapper">
             <div class="c-c-r-row">
-              <div class="row-item"><dt>週間</dt><dd>{{ $result['rank_point']['weekly'] }}<span>位</span></dd></div>
-              <div class="row-item"><dt>月間</dt><dd>{{ $result['rank_point']['monthly'] }}<span>位</span></dd></div>
+              <div class="row-item"><dt>週間</dt><dd>{{ $result['rank_point']['weekly'] }}
+                <span>
+                  @php
+                  if ($result['rank_point']['weekly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
+              <div class="row-item"><dt>月間</dt><dd>{{ $result['rank_point']['monthly'] }}
+                <span>
+                  @php
+                  if ($result['rank_point']['monthly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
             </div>
             <div class="c-c-r-row">
-              <div class="row-item"><dt>年間</dt><dd>{{ $result['rank_point']['yearly'] }}<span>位</span></dd></div>
-              <div class="row-item"><dt>累計期間</dt><dd>{{ $result['rank_point']['all'] }}<span>位</span></dd></div>
+              <div class="row-item"><dt>年間</dt><dd>{{ $result['rank_point']['yearly'] }}
+                <span>
+                  @php
+                  if ($result['rank_point']['yearly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
+              <div class="row-item"><dt>累計期間</dt><dd>{{ $result['rank_point']['all'] }}
+                <span>
+                  @php
+                  if ($result['rank_point']['all'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
             </div>
           </div>
         </div>
@@ -91,12 +175,40 @@
           <canvas id="chart_un" class="canvas"></canvas>
           <div class="c-card-rank-wrapper">
             <div class="c-c-r-row">
-              <div class="row-item"><dt>週間</dt><dd>{{ $result['rank_unique']['weekly'] }}<span>位</span></dd></div>
-              <div class="row-item"><dt>月間</dt><dd>{{ $result['rank_unique']['monthly'] }}<span>位</span></dd></div>
+              <div class="row-item"><dt>週間</dt><dd>{{ $result['rank_unique']['weekly'] }}
+                <span>
+                  @php
+                  if ($result['rank_unique']['weekly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
+              <div class="row-item"><dt>月間</dt><dd>{{ $result['rank_unique']['monthly'] }}
+                <span>
+                  @php
+                  if ($result['rank_unique']['monthly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
             </div>
             <div class="c-c-r-row">
-              <div class="row-item"><dt>年間</dt><dd>{{ $result['rank_unique']['yearly'] }}<span>位</span></dd></div>
-              <div class="row-item"><dt>累計期間</dt><dd>{{ $result['rank_unique']['all'] }}<span>位</span></dd></div>
+              <div class="row-item"><dt>年間</dt><dd>{{ $result['rank_unique']['yearly'] }}
+                <span>
+                  @php
+                  if ($result['rank_unique']['yearly'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
+              <div class="row-item"><dt>累計期間</dt><dd>{{ $result['rank_unique']['all'] }}
+                <span>
+                  @php
+                  if ($result['rank_unique']['all'] !== 'ランク外') {
+                    echo '位';
+                  }
+                  @endphp
+                </span></dd></div>
             </div>
           </div>
         </div>
@@ -119,15 +231,17 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
         var graghData = @json($gragh_data);
+
+        console.log(graghData);
   
         var ctxMk = document.getElementById('chart_mk');
         var myChartMk = new Chart(ctxMk, {
             type: 'line',
             data: {
-                labels: graghData.time_spans_for_g,
+                labels: graghData.original.time_spans_for_g,
                 datasets: [{
                     label: '指標1の値',
-                    data: graghData.mark_for_g,
+                    data: graghData.original.mark_for_g,
                     borderColor: '#5eccb0ff',
                 }]
             }
@@ -137,10 +251,10 @@
         var myChartCalc = new Chart(ctxCalc, {
             type: 'line',
             data: {
-                labels: graghData.time_spans_for_g,
+                labels: graghData.original.time_spans_for_g,
                 datasets: [{
                     label: '指標2の値',
-                    data: graghData.calc_for_g,
+                    data: graghData.original.calc_for_g,
                     borderColor: '#bed630',
                 }]
             }
@@ -150,10 +264,10 @@
         var myChartPo = new Chart(ctxPo, {
             type: 'line',
             data: {
-                labels: graghData.time_spans_for_g,
+                labels: graghData.original.time_spans_for_g,
                 datasets: [{
                     label: '週間獲得ポイント数',
-                    data: graghData.point_for_g,
+                    data: graghData.original.point_for_g,
                     borderColor: '#f25814',
                 }]
             }
@@ -163,10 +277,10 @@
         var myChartUn = new Chart(ctxUn, {
             type: 'line',
             data: {
-                labels: graghData.time_spans_for_g,
+                labels: graghData.original.time_spans_for_g,
                 datasets: [{
                     label: '週間ユニークユーザ数',
-                    data: graghData.unique_for_g,
+                    data: graghData.original.unique_for_g,
                     borderColor: '#6fa8dc',
                 }]
             }

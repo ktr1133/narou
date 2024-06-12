@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="jp">
     @include('layouts.common')
+    <!-- 固有CSS -->
+    <link rel="stylesheet" href="{{asset('css/app.css')}}">
     <body>
 
         <!--↓サイトコンテンツ-->

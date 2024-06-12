@@ -38,13 +38,13 @@ class Ma extends Model
         'sum_un'
     ];
     private $mean_monthly = 'mean_monthly';
-    private $mean_half = 'mean_half';
-    private $mean_yearly = 'mean_yearly';
-    private $mean_all = 'mean';
-    private $sum_montyly = 'sum_monthly';
-    private $sum_half = 'sum_half';
-    private $sum_yearly = 'sum_yearly';
-    private $sum_all = 'sum_all';
+    private $mean_half    = 'mean_half';
+    private $mean_yearly  = 'mean_yearly';
+    private $mean_all     = 'mean';
+    private $sum_montyly  = 'sum_monthly';
+    private $sum_half     = 'sum_half';
+    private $sum_yearly   = 'sum_yearly';
+    private $sum_all      = 'sum_all';
     private $table_names = [
         NarouConst::MARK              => NarouConst::TBL_MARK,
         NarouConst::CALC              => NarouConst::TBL_CALC,
@@ -207,8 +207,8 @@ class Ma extends Model
             ->leftJoin($table, 'ma.ncode', '=', "$table.ncode")
             ->select('ma.*', "$table.$ave as ave")
             ->whereBetween('general_all_no', [$from, $to])
-            ->where($column, '>', 0)
-            ->orderBy($column, 'asc')
+            ->where($table.'.'.$column, '>', 0)
+            ->orderBy($table.'.'.$column, 'asc')
             ->limit($limit)
             ->get();
         }elseif($table === NarouConst::TBL_CALC){

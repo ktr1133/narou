@@ -26,6 +26,7 @@ class DetailController extends Controller
         Log::info($request['ncode']);
         Log::info('DetailController@showが呼び出されました');
         $result = $this->generateDetailWork($request);
+        Log::debug($result);
         
         $gragh_data = $this->getGraghData($request);
 
@@ -282,13 +283,20 @@ class DetailController extends Controller
         //期間別の実日付のリストを作成
         $time_spans = $this->timeSpan();
         $time_spans_all = $time_spans['all'];
+        sort($time_spans_all);
     
         //グラフ描画用ﾃﾞｰﾀ処理開始
-        $ma = new Ma();
-        $point_a = $ma->getPoint($request);
-        $unique_a = $ma->getUnique($request);
-        $mark_a = $ma->getMark($request);
-        $calc_a = $ma->getCalc($request);
+        $point = new Point;
+        $unique = new Unique;
+        $mark = new Mark;
+        $calc = new Calc;
+
+        $point_a = $point->getRankData()->where('ncode', $request['ncode'])->first();
+        Log::info('point_a');
+        Log::debug($point_a);
+        $unique_a = $unique->getRankData()->where('ncode', $request['ncode'])->first();
+        $mark_a = $mark->getRankData()->where('ncode', $request['ncode'])->first();
+        $calc_a = $calc->getRankData()->where('ncode', $request['ncode'])->first();
     
         //グラフ描画用ﾃﾞｰﾀｾｯﾄ取得完了
         foreach ($time_spans_all as $time) {
@@ -300,6 +308,8 @@ class DetailController extends Controller
             $mark_for_g[] = $mark_a[$time];
             $calc_for_g[] = $calc_a[$time];
         }
+        Log::info('mark_for_g');
+        Log::debug($mark_for_g); 
     
         return response()->json([
             'time_spans_for_g' => $time_spans_for_g,

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class Point extends Model
 {
@@ -102,7 +103,7 @@ class Point extends Model
      }
  
       /**
-      * pointテーブルから対象となるカラムが0より大きな値のﾃﾞｰﾀを降順で並べ替えて全件取得
+      * pointテーブルから全件取得
       * 
       * @return EloquentCollection
       */
@@ -267,4 +268,24 @@ class Point extends Model
              'all'     => $rank_a,
          ];
      }
+
+      /**
+      * pointテーブルからカラムが日付のﾃﾞｰﾀを新しい順に並べ替えて全件取得
+      * 
+      * @return EloquentCollection
+      */
+      public function getGraghData(): EloquentCollection
+      {
+        return $this->query()
+            ->select(function($row) {
+                $date_columns = array();
+                foreach ($row as $column) {
+                    if (strpos($column, '-') !== false) {
+                        $date_columns[] = $column;
+                    }
+                }
+                return $date_columns;
+            })
+            ->get();
+      }
 }
