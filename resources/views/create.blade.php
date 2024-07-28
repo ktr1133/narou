@@ -137,7 +137,7 @@
                     </form>
                 </div>
                 <div id="by_writer" class="panel">
-                    <form action="{{ route('result.show') }}" method="get" class="search_content">
+                    <form action="{{ route('result-w') }}" method="get" class="search_content">
                         @csrf
                         <dl>
                             <div class="s-form-row">
@@ -147,8 +147,8 @@
                                         <select name="cate" id="cate" class="cate">
                                             <option value="lowPHighU" selected>ポイントの割に読者数は多い作品を持つ作者</option>
                                             <option value="lowPHighUHighF">ポイントの割に読者数は多く、更新頻度が高い作品を持つ作者</option>
-                                            <option value="HighP">ポイントが高い作品を持つ作者</option>
-                                            <option value="HighU">読者数が多い作品を持つ作者</option>
+                                            <option value="HighP">ポイントが高い作者</option>
+                                            <option value="HighU">読者数が多い作者</option>
                                             <option value="HighR">登録作品数が多い作者</option>
                                         </select>
                                     </div>
@@ -165,16 +165,6 @@
                                         <option value="yearly">年間</option>
                                         <option value="all" selected>累計</option>
                                         </select>
-                                    </div>
-                                </dd>
-                            </div>
-                            <div class="s-form-row">
-                                <dt class="s-form-item"><label for="general_all_no">総話数</label></dt>
-                                <dd class="s-form-explain">
-                                    <div class="range">
-                                        <input type="text" id="general_all_no_from" name="gan_num[gan_from]" class="gan-text" placeholder="0">
-                                        <span> ～ </span>
-                                        <input type="text" id="general_all_no_to" name="gan_num[gan_to]" class="gan-text" placeholder="入力してください">
                                     </div>
                                 </dd>
                             </div>

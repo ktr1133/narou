@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Consts\NarouConst;
 use App\Http\Requests\DetailPostRequest;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
@@ -105,9 +105,9 @@ class Mark extends Model
      /**
      * Markテーブルから対象となるカラムが0より大きな値のﾃﾞｰﾀを昇順で並べ替えて全件取得
      * 
-     * @return EloquentCollection
+     * @return Collection
      */
-    public function getRankData(): EloquentCollection
+    public function getRankData(): Collection
     {
         return $this->query()
             ->select('mark.*')
@@ -139,7 +139,7 @@ class Mark extends Model
             })->sortBy($weekly);
         $rank_w = null;
         $i=1;
-        $before = 9999999999999;
+        $before = PHP_INT_MAX;
         foreach($result as $rec){
             if($rec[$weekly] ===$before){
               $i = $i -1;
@@ -165,7 +165,7 @@ class Mark extends Model
             })->sortBy($monthly);
         $rank_m = null;
         $i=1;
-        $before = 9999999999999;
+        $before = PHP_INT_MAX;
         foreach($result as $rec){
             if($rec[$monthly] ===$before){
               $i = $i -1;
@@ -191,7 +191,7 @@ class Mark extends Model
             })->sortBy($half);
         $rank_h = null;
         $i=1;
-        $before = 9999999999999;
+        $before = PHP_INT_MAX;
         foreach($result as $rec){
             if($rec[$half] ===$before){
               $i = $i -1;
@@ -243,7 +243,7 @@ class Mark extends Model
             })->sortBy($all);
         $rank_a = null;
         $i=1;
-        $before = 9999999999999;
+        $before = PHP_INT_MAX;
         foreach($result as $rec){
             if($rec[$all] ===$before){
               $i = $i -1;
@@ -267,5 +267,67 @@ class Mark extends Model
             'yearly'  => $rank_y,
             'all'     => $rank_a,
         ];
+    }
+
+    /**
+     * 作者用ランキング検索
+     * 
+     * @param array $search 検索条件
+     * @return Collection
+     */
+    public function getWMark(array $search): Collection
+    {
+        // ベースクエリ
+        $query = $this->query()->leftJoin(
+            'ma',
+            'mark.ncode',
+            '=',
+            'ma.ncode'
+        )->select(
+            'ma.*',
+            'mark.ncode',
+        );
+
+        // リレーション
+        if (isset($search['point_num'])) {
+            $query = $query->leftJoin(
+                'point',
+                'mark.ncode',
+                '=',
+                'point.ncode'
+            );
+        }
+        if (isset($search['unique_num'])) {
+            $query = $query->leftJoin(
+                'unique',
+                'mark.ncode',
+                '=',
+                'unique.ncode'
+            );
+           
+        }
+        if (isset($search['frequency'])) {
+            $query = $query->leftJoin(
+                'update_frequency',
+                'mark.ncode',
+                '=',
+                'update_frequency.ncode'
+            );
+        };
+        // 必須条件
+        $main_column = null;
+        switch ($search['time_span']){
+            case NarouConst::TIME_SPAN_WEEKLY:
+                
+        }
+
+        // 検索条件
+        if (isset($search['point_from'])) {
+            $query = $query->where(
+
+            );
+        }
+
+        return $query->get();
     }
 }

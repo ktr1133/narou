@@ -133,7 +133,7 @@
       <!-- jQueryのライブラリー本体を読み込む -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
       <!-- 必ずjQuery本体を読み込んだ後にjQueryで書いたファイルを読み込む-->
-      <script src="../js/main.js"></script>
+      <script src="{{ asset('js/main.js') }}"></script>
 
   </body>
 </html>

@@ -23,12 +23,12 @@ class CreatePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'point_from'  => 'numeric',
-            'point_to'    => 'numeric',
-            'gan_from'    => 'numeric',
-            'gan_to'      => 'numeric',
-            'unique_from' => 'numeric',
-            'unique_to'   => 'numeric',
+            'point_from'  => 'nullable, numeric',
+            'point_to'    => 'nullable, numeric',
+            'gan_from'    => 'nullable, numeric',
+            'gan_to'      => 'nullable, numeric',
+            'unique_from' => 'nullable, numeric',
+            'unique_to'   => 'nullable, numeric',
         ];
     }
 

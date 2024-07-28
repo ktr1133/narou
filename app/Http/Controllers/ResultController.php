@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Consts\NarouConst;
+use App\Exceptions\QueryException;
 use App\Models\Mark;
 use DateTime;
 use App\Http\Requests\CreatePostRequest;
@@ -25,6 +26,10 @@ class ResultController extends Controller
         Log::info('$this->generateRanking($request)の処理を開始');
         $result = $this->generateRanking($request);
         Log::info('$this->generateRanking($request)の処理が終了');
+        //結果が0件の場合、例外を投げる
+        if ($result->isEmpty()) {
+            throw new QueryException('No results found for your selection.');
+        }
         return view('result', ['result' => $result, 'select_data' => $select_data]);
     }
 
@@ -113,12 +118,12 @@ class ResultController extends Controller
         $unique_to_tex = '';
         if(!empty($unique_num)){
             if(!empty($unique_num)){
-                $unique_from_tex =$unique_from.'話';
+                $unique_from_tex =$unique_from;
             }else{
                 $unique_from_tex = '';
             }
             if(!empty($unique_num)){
-                $unique_to_tex = $unique_to.'話';
+                $unique_to_tex = $unique_to;
             }else{
                 $unique_to_tex = '';
             }
@@ -137,15 +142,15 @@ class ResultController extends Controller
             }
         }
         return [
-            NarouConst::SELECT_CREATE_CATEGORY => $cate_tex,
-            NarouConst::SELECT_CREATE_TIMESPAN => $time_span_tex,
-            NarouConst::INPUT_GENERAL_ALL_NO_FROM => $gan_from_tex,
-            NarouConst::INPUT_GENERAL_ALL_NO_TO => $gan_to_tex,
-            NarouConst::INPUT_POINT_FROM => $point_from_tex,
-            NarouConst::INPUT_POINT_TO => $point_to_tex,
-            NarouConst::INPUT_UNIQUE_FROM => $unique_from_tex,
-            NarouConst::INPUT_UNIQUE_TO => $unique_to_tex,
-            NarouConst::SELECT_CREATE_FREQUENCY => $frequency,
+            NarouConst::SELECT_CREATE_CATEGORY      => $cate_tex,
+            NarouConst::SELECT_CREATE_TIMESPAN      => $time_span_tex,
+            NarouConst::INPUT_GENERAL_ALL_NO_FROM   => $gan_from_tex,
+            NarouConst::INPUT_GENERAL_ALL_NO_TO     => $gan_to_tex,
+            NarouConst::INPUT_POINT_FROM            => $point_from_tex,
+            NarouConst::INPUT_POINT_TO              => $point_to_tex,
+            NarouConst::INPUT_UNIQUE_FROM           => $unique_from_tex,
+            NarouConst::INPUT_UNIQUE_TO             => $unique_to_tex,
+            NarouConst::SELECT_CREATE_FREQUENCY     => $frequency,
             ];
     }
 

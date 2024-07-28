@@ -75,6 +75,8 @@ class NarouConst
     const FREQUENCY_TEXT_1TIMEPERMONTH = '月に１回以上';
     const FREQUENCY_TEXT_1TIMEPERHALF = '半期に１回以上';
     const FREQUENCY_TEXT_1TIMEPERYEAR = '年に１回以上';
+    const NO_INPUT_DATA = '入力値がありません';
+    const NO_SELECT_DATA = '選択しませんでした';
     //固定値
     const FREQUENCY_VALUE_1TIMEPERDAY = 1;
     const FREQUENCY_VALUE_1TIMEPERWEEK = 1/7;

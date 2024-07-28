@@ -14,7 +14,24 @@ class DetailPostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ncode' => 'required|string|size:7',
+            'ncode'  => 'required|string|size:7',
+            'writer' => 'string',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'ncode'  => 'ncode',
+            'writer' => '作者',
+        ];        
+    }
+
+    public function message()
+    {
+        return [
+            'ncode'  => ':attributeは7桁の英数字です',
+            'writer' => ':attributeが正確に入力されませんでした。',
         ];
     }
 }

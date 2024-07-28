@@ -14,19 +14,19 @@ window.onpageshow = function (event) {
 };
 
 /*-- ﾓｰﾀﾞﾙで表示-- */
-jQuery('.modal-link').on('click', function(e){
+$('.modal-link').on('click', function(e){
     e.preventDefault();
-    var target = jQuery(this).data('target');
-    jQuery(target).show();
+    var target = $(this).data('target');
+    $(target).show();
 
     return false;
 });
 
 //ﾓｰﾀﾞﾙを閉じる
-jQuery('.js-close-btn').on('click', function(e){
+$('.js-close-btn').on('click', function(e){
     e.preventDefault();
-    var target = jQuery(this).data('target');
-    jQuery(target).hide();
+    var target = $(this).data('target');
+    $(target).hide();
 
     return false;
 });
